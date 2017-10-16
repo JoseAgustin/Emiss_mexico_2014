@@ -1,0 +1,1 @@
+../08_spec/RACM2_MGLY_M.txt

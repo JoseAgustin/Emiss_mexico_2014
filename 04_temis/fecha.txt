@@ -1,0 +1,2 @@
+4       ! month jan =1 to dec=12
+23       ! day in the month (from 1 to 28,30 or 31)

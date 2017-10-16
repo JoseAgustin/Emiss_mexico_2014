@@ -1,0 +1,47 @@
+ProfNum	Monday	Tuesday	Wednesday	Thursday	Friday	Saturday	Sunday	Total	! 	Description
+1	200	200	200	200	200	0	0	1000	!	Mon-Fri uniform
+2	200	200	200	200	200	0	0	1000	!	Mon-Fri uniform
+3	200	200	200	200	200	0	0	1000	!	Mon-Fri uniform
+4	200	200	200	200	200	0	0	1000	!	Mon-Fri uniform
+5	200	200	200	200	200	0	0	1000	!	Mon-Fri uniform
+6	167	167	167	167	167	167	0	1000	!	Mon-Sat uniform
+7	143	143	143	143	143	143	143	1000	!	Mon-Sun uniform
+8	147	147	147	147	147	135	129	1000	!	"Mon-Fri uniform, Sat-Sun slight decrease"
+9	111	111	111	111	111	222	222	1000	!	"Mon-Fri uniform, Sat-Sun uniform double"
+10	164	164	164	164	164	115	66	1000	!	"Mon-Fri uniform, Sat-Sun sharp decrease"
+11	67	67	67	67	67	333	333	1000	!	"Mon-Fri uniform, Sat-Sun uniform x5"
+12	179	179	179	179	179	71	36	1000	!	"Mon-Fri uniform, Sat-Sun sharp decrease"
+13	192	192	192	192	192	39	0	1000	!	"Mon-Fri uniform, Sat x1/5, Sun zero"
+14	149	149	149	149	149	149	105	1000	!	"Mon-Sat uniform, Sun slight decrease"
+15	191	191	191	191	191	48	0	1000	!	"Mon-Fri uniform, Sat x1/4, Sun zero"
+16	60	60	60	60	60	350	350	1000	!	"Mon-Fri uniform, Sat-Sun uniform x6"
+17	160	160	160	160	160	100	100	1000	!	"Mon-Fri uniform, Sat-Sun uniform x2/3"
+18	167	167	167	167	167	83	83	1000	!	"Mon-Fri uniform, Sat-Sun uniform x1/2"
+19	180	180	180	180	180	50	50	1000	!	"Mon-Fri uniform, Sat-Sun uniform x1/3"
+101	150	150	150	150	150	150	100	1000	!	"Mon-Sat uniform, Sun x2/3"
+102	200	200	200	200	200	0	0	1000	!	Mon-Fri uniform
+103	140	140	150	150	140	140	140	1000	!	"All uniform, but Wed-Thu x1.07"
+104	100	200	200	200	200	100	0	1000	!	"Tue-Fri uniform, Mon&Sat x1/2"
+105	190	190	190	190	190	50	0	1000	!	"Mon-Fri uniform, Sat x1/4"
+106	190	190	190	190	190	30	20	1000	!	"Mon-Fri uniform, Sat x1/6, Sun x1/8"
+107	170	170	170	170	160	160	0	1000	!	"Mon-Thu uniform, Fri-Sat x0.94"
+108	150	250	250	250	100	0	0	1000	!	
+109	150	150	150	150	160	130	110	1000	!	
+110	160	160	170	170	160	90	90	1000	!	
+111	140	140	150	150	170	120	130	1000	!	
+112	160	160	160	160	160	150	50	1000	!	"Mon-Fri uniform, Sat x0.94, Sun x1/3"
+113	120	120	120	120	120	200	200	1000	!	"Mon-Fri uniform, Sat-Sun x1.7"
+114	50	30	30	30	50	410	400	1000	!	
+115	200	200	200	200	200	0	0	1000	!	Mon-Fri uniform
+116	170	170	170	170	160	80	80	1000	!	
+117	150	160	160	160	150	130	90	1000	!	
+118	180	180	180	180	180	70	30	1000	!	"Mon-Fri uniform, Sat x1/2, Sun x1/6"
+119	190	190	200	190	190	40	0	1000	!	
+120	160	160	170	160	160	130	60	1000	!	
+150	200	200	200	200	200	0	0	1000	!	Mon-Fri uniform
+153	140	140	150	150	140	140	140	1000	!	
+200	180	180	180	180	180	100	0	1000	!	"Mon-Fri uniform, Sat x0.55"
+2001	101	100	100	109	111	94	89	704	!	
+2002	101	100	100	109	111	94	89	704	!	
+2003    1371	1418	1441	1444	1626	1469	1161	9930	!	"CDMX"
+22003	109	108	106	114	109	86	68	699	!	

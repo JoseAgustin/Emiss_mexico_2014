@@ -1,0 +1,1 @@
+../04_temis/temporal_wkday.txt
