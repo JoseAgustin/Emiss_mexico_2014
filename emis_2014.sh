@@ -18,7 +18,7 @@ echo $ProcessDir
 #  Build the fecha.txt file
 
 mes=4
-dia=24
+dia=23
  
 while [ $dia -le 23 ]
 do

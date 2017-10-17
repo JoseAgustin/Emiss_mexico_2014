@@ -15,7 +15,7 @@
 !       Se incluye Carbono Negro
 module vars
 integer nl   !  Number of lines in F_movil.csv
-integer nl2  !  Number of lines in grid_pob.txt
+integer nl2  !  Number of lines in gri_movil.csv
 integer npol !  Number of pollutants
 parameter (npol=10 )
 integer,allocatable :: id(:),id2(:) !State Mun code in emis and grid files
@@ -33,11 +33,11 @@ end module vars
 program movil_spatial
 use vars
 
-	call lee
-  
+    call lee
+
     call computations
-  
-	call imprime
+
+    call imprime
 	
 contains
 subroutine imprime
@@ -60,16 +60,11 @@ end subroutine imprime
 !
 subroutine computations
 implicit none
-	integer i,j,ii,l,k
-logical,allocatable::xl(:),yl(:)
-    allocate(xl(size(emid)),yl(size(iscc)))
-    xl=.true.
-    yl=.true.
+  integer i,j,ii,l,k
 	print *,' Start doing computations'
 	print *,(pol(i),i=1,npol)
 	call count  ! counts grids and scc different values
 	print *,'end count'
-
 	ii=1
    do k=1, size(grid2)
 	do i=1,nl2 ! gri_movil
@@ -79,13 +74,11 @@ logical,allocatable::xl(:),yl(:)
 			  do l=1,size(jscc)
 			   if(iscc(j).eq.jscc(l))then
                  do ii=1,npol
-                pemi(k,ii,l)=pemi(k,ii,l)+ &
+                pemi(k,ii,l)=pemi(k,ii,l) &
 				+(uf(i)+rf(i))*ei(j,ii)
                  end do !ii
-                  yl(j)=.false.
 			   end if!scc
 			  end do! l
-          xl(i)=.false.
            end if!  id2
 		end do!j
       end if! grid
@@ -129,7 +122,7 @@ subroutine lee
 !    print *,emid(i),iscc(i),ei(i,7),im(i)
 !   if(i.eq.4) stop
 	end do
-	print *,'End reading file F_moviles.csv'
+	print *,'End reading file F_moviles.csv '
 	close(10)
 !
 	open(10,file='gri_movil.csv',status='old',action='read')
@@ -155,7 +148,7 @@ subroutine lee
     if(iedo.eq.8.or.iedo.eq.18.and.iedo.eq.25.and.iedo.eq.26)im(i)=7
 	!print *,i,grid(i),id2(i),uf(i),rf(i)
 	end do
-	print *,'End reading file gri_movil.csv'
+	print *,'End reading file gri_movil.csv',nl2
 	close(10)
 !
 !	Se considera que el 10 % va en carretera 
