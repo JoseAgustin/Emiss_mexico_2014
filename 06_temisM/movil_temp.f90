@@ -13,6 +13,7 @@
 !   10/02/2015  Se indica que esta en g/h las emisiones.
 !   10/07/2017  Para 2014 nnscc 57 a 58, inclusion del 76946 y BC, CO2 y hEST
 !   21/07/2017  Incluye CO2 y CH4
+!   01/11/2017  Incluye NO y NO2
 !
 module variables
 integer :: month
@@ -23,7 +24,7 @@ integer :: nnscc !max number of scc descriptors in input files
 integer :: nm ! line number in emissions file
 integer :: nh ! number of hour per day
 integer ::juliano
-parameter (nf=10, nh=24, nnscc=36,juliano=366)
+parameter (nf=11, nh=24, nnscc=36,juliano=366)
 integer,dimension(nf) :: nscc ! number of scc codes per file
 integer*8,dimension(nnscc) ::iscc 
 integer, allocatable :: idcel(:),idcel2(:)
@@ -40,14 +41,14 @@ character (len=19) :: current_date
 
 character(len=14),dimension(nf) ::efile,casn
 
- data efile / 'M_CO.csv' ,'M_NH3.csv' ,'M_NOx.csv' ,'M_SO2.csv',&
-              'M_CN.csv' ,'M_CO2.csv','M_CH4.csv','M_PM10.csv',&
-              'M_PM25.csv','M_VOC.csv'/
+ data efile / 'M_CO.csv' ,'M_NH3.csv' ,'M_NO2.csv','M_NO.csv',&
+              'M_SO2.csv','M_CN.csv' ,'M_CO2.csv','M_CH4.csv',&
+              'M_PM10.csv','M_PM25.csv','M_VOC.csv'/
 
- data casn /'TMCO__2014.csv','TMNH3_2014.csv','TMNOx_2014.csv', &
-            'TMSO2_2014.csv','TMCN__2014.csv','TMCO2_2014.csv', &
-            'TMCH4_2014.csv','TMPM102014.csv','TMPM2_2014.csv', &
-            'TMCOV_2014.csv'/
+ data casn /'TMCO__2014.csv','TMNH3_2014.csv','TMNO2_2014.csv', &
+            'TMNO_2014.csv ','TMSO2_2014.csv','TMCN__2014.csv', &
+            'TMCO2_2014.csv','TMCH4_2014.csv','TMPM102014.csv', &
+            'TMPM2_2014.csv','TMCOV_2014.csv'/
 
 common /vars/ fweek,nscc,nm,month,daytype,perfil,mes,dia,hora,current_date
 end module
@@ -382,10 +383,10 @@ subroutine compute
 	  do i=1,nm
 		  do l=1,nh
 	        do j=1,nscc(k)
-    if(mst(i).eq.6) emis(i,k,l)=emis(i,k,l)+emiM(i,j,k)*mes(j,k)*hEST(j,k,l)*1000
-    if(mst(i).eq.6) emis(i,k,l)=emis(i,k,l)+emiM(i,j,k)*mes(j,k)*hCST(j,k,l)*1000
-    if(mst(i).eq.7) emis(i,k,l)=emis(i,k,l)+emiM(i,j,k)*mes(j,k)*hMST(j,k,l)*1000
-    if(mst(i).eq.8) emis(i,k,l)=emis(i,k,l)+emiM(i,j,k)*mes(j,k)*hPST(j,k,l)*1000
+    if(mst(i).eq.5) emis(i,k,l)=emis(i,k,l)+emiM(i,j,k)*mes(j,k)*hEST(j,k,l)
+    if(mst(i).eq.6) emis(i,k,l)=emis(i,k,l)+emiM(i,j,k)*mes(j,k)*hCST(j,k,l)
+    if(mst(i).eq.7) emis(i,k,l)=emis(i,k,l)+emiM(i,j,k)*mes(j,k)*hMST(j,k,l)
+    if(mst(i).eq.8) emis(i,k,l)=emis(i,k,l)+emiM(i,j,k)*mes(j,k)*hPST(j,k,l)
 		    end do
 		  end do
 	  end do
@@ -396,10 +397,10 @@ subroutine compute
    do i=1,nm
 		  do l=1,nh
 	        do j=1,nscc(k)
-    if(mst(i).eq.5) epm2(i,j,l)=epm2(i,j,l)+emiM(i,j,k)*mes(j,k)*hEST(j,k,l)*1000
-    if(mst(i).eq.6) epm2(i,j,l)=epm2(i,j,l)+emiM(i,j,k)*mes(j,k)*hCST(j,k,l)*1000
-    if(mst(i).eq.7) epm2(i,j,l)=epm2(i,j,l)+emiM(i,j,k)*mes(j,k)*hMST(j,k,l)*1000
-    if(mst(i).eq.8) epm2(i,j,l)=epm2(i,j,l)+emiM(i,j,k)*mes(j,k)*hPST(j,k,l)*1000
+    if(mst(i).eq.5) epm2(i,j,l)=epm2(i,j,l)+emiM(i,j,k)*mes(j,k)*hEST(j,k,l)
+    if(mst(i).eq.6) epm2(i,j,l)=epm2(i,j,l)+emiM(i,j,k)*mes(j,k)*hCST(j,k,l)
+    if(mst(i).eq.7) epm2(i,j,l)=epm2(i,j,l)+emiM(i,j,k)*mes(j,k)*hMST(j,k,l)
+    if(mst(i).eq.8) epm2(i,j,l)=epm2(i,j,l)+emiM(i,j,k)*mes(j,k)*hPST(j,k,l)
 		    end do
 		  end do
 	  end do
@@ -409,10 +410,10 @@ subroutine compute
    do i=1,nm
 		  do l=1,nh
 	        do j=1,nscc(k)
-    if(mst(i).eq.5) evoc(i,j,l)=evoc(i,j,l)+emiM(i,j,nf)*mes(j,nf)*hEST(j,nf,l)*1000
-    if(mst(i).eq.6) evoc(i,j,l)=evoc(i,j,l)+emiM(i,j,nf)*mes(j,nf)*hCST(j,nf,l)*1000
-    if(mst(i).eq.7) evoc(i,j,l)=evoc(i,j,l)+emiM(i,j,nf)*mes(j,nf)*hMST(j,nf,l)*1000
-    if(mst(i).eq.8) evoc(i,j,l)=evoc(i,j,l)+emiM(i,j,nf)*mes(j,nf)*hPST(j,nf,l)*1000
+    if(mst(i).eq.5) evoc(i,j,l)=evoc(i,j,l)+emiM(i,j,nf)*mes(j,nf)*hEST(j,nf,l)
+    if(mst(i).eq.6) evoc(i,j,l)=evoc(i,j,l)+emiM(i,j,nf)*mes(j,nf)*hCST(j,nf,l)
+    if(mst(i).eq.7) evoc(i,j,l)=evoc(i,j,l)+emiM(i,j,nf)*mes(j,nf)*hMST(j,nf,l)
+    if(mst(i).eq.8) evoc(i,j,l)=evoc(i,j,l)+emiM(i,j,nf)*mes(j,nf)*hPST(j,nf,l)
 		    end do
 		  end do
 	  end do

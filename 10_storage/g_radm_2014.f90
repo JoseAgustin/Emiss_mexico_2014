@@ -19,7 +19,8 @@
 !   Inclusion de NO2 en las emisiones       19/02/2014
 !   Inclusion de poblacion en la salida     10/06/2014
 !   Para año 2014                           12/07/2017
-!   Dos capas en puntuales                  18707/2017
+!   Dos capas en puntuales                  18/07/2017
+!   Se incluyen NO y NO2 de moviles         01/11/2017
 !
 module vars
     integer :: nf    ! number of files antropogenic
@@ -96,7 +97,7 @@ subroutine lee
 	& 'RADM-2_XYL_A.txt','TACO2_2014.csv','TAPM102014.csv','TAPM2_2014.csv', &
 	& 'GSO4_A.txt','PNO3_A.txt','OTHE_M.txt','POA_A.txt','PEC_A.txt',&
     & 'TACH4_2014.csv','TACN__2014.csv'/
-	data fnameM /'TMCO__2014.csv','TMNH3_2014.csv','TMNOx_2014.csv','TMNOx_2014.csv','TMSO2_2014.csv',&
+	data fnameM /'TMCO__2014.csv','TMNH3_2014.csv','TMNO_2014.csv','TMNO2_2014.csv','TMSO2_2014.csv',&
 	& 'RADM-2_ALD_M.txt','RADM-2_CH4_M.txt','RADM-2_CSL_M.txt','RADM-2_ETH_M.txt',&
 	& 'RADM-2_GLY_M.txt','RADM-2_HC3_M.txt','RADM-2_HC5_M.txt','RADM-2_HC8_M.txt',&
 	& 'RADM-2_HCHO_M.txt','RADM-2_ISO_M.txt','RADM-2_KET_M.txt','RADM-2_MACR_M.txt',&
@@ -124,14 +125,14 @@ subroutine lee
 !        HC3   HC5   HC8 HCHO ISOP  KET   MACR MGLY MVK OL2 OLI
 !        OLT   ORA1  ORA2  TOL  XYL  CO2
 !       PM10  PM2.5  PSO4 PNO3 OTHER POA   PEC  CH4   CN
-DATA scala /  0.00,0.00,0.00,0.00,0.00,  0.00,0.00,0.00,0.00,0.00,& !
-&             0.00,0.00,0.00,0.00,0.00,  0.00,0.00,0.00,0.00,0.00,&
-&             0.00,0.00,0.00,0.00,0.00,  0.00,0.00,0.00,0.00,0.00,&
-&             0.00,0.00,0.00,0.00,0.00,  0.00/
-DATA scalm /  0.00,0.00,0.00,0.00,0.00,  0.00,0.00,0.00,0.00,0.00,& !
-&             0.00,0.00,0.00,0.00,0.00,  0.00,0.00,0.00,0.00,0.00,&
-&             0.00,0.00,0.00,0.00,0.00,  0.00,0.00,0.00,0.00,0.00,&
-&             0.00,0.00,0.00,0.00,0.00,  0.00/
+DATA scala /  1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,& !
+&             1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,&
+&             1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,&
+&             1.00,1.00,1.00,1.00,1.00,  1.00/
+DATA scalm /  1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,& !
+&             1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,&
+&             1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,&
+&             1.00,1.00,1.00,1.00,1.00,  1.00/
 DATA scalp /  1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,& !
 &             1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,&
 &             1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,&
@@ -310,7 +311,7 @@ subroutine store
   	   DATA isp / 1, 2, 3, 4, 5, 6, 7, 8, 9,10, &
                  11,12,13,14,15, 16,17,18,19,20, &
                  21,22,23,24,25, 26,27,28,29,30, &
-				 31,32,33,34,35, 36,37,38,39/
+                 31,32,33,34,35, 36,37,38,39/
 
     data sdim /"Time               ","DateStrLen         ","west_east          ",&
 	&          "south_north        ","bottom_top         ","emissions_zdim_stag"/	
@@ -456,25 +457,24 @@ tiempo: do it=iit,eit
 
   	      Times(1,1)=current_date(1:19)
 			  if (periodo.eq. 1) then
-			    call check( nf90_put_var(ncid,id_var(radm+1),Times,start=(/1,it+1/)) )
-				call check( nf90_put_var(ncid, id_varlong,xlon,start=(/1,1,it+1/)) )
-				call check( nf90_put_var(ncid, id_varlat,xlat,start=(/1,1,it+1/)) )
-                call check( nf90_put_var(ncid, id_varpop,pob,  start=(/1,1,it+1/)) )
+              call check( nf90_put_var(ncid,id_var(radm+1),Times,start=(/1,it+1/)) )
+              call check( nf90_put_var(ncid, id_varlong,xlon,start=(/1,1,it+1/)) )
+              call check( nf90_put_var(ncid, id_varlat,xlat,start=(/1,1,it+1/)) )
+              call check( nf90_put_var(ncid, id_varpop,pob,  start=(/1,1,it+1/)) )
 			  else
-		        call check( nf90_put_var(ncid,id_var(radm+1),Times,start=(/1,it-11/)) )
-				call check( nf90_put_var(ncid, id_varlong,xlon,start=(/1,1,it-11/)) )
-				call check( nf90_put_var(ncid, id_varlat,xlat,start=(/1,1,it-11/)) )
-                call check( nf90_put_var(ncid, id_varpop,pob,start=(/1,1,it-11/)) )
-
+              call check( nf90_put_var(ncid,id_var(radm+1),Times,start=(/1,it-11/)) )
+              call check( nf90_put_var(ncid, id_varlong,xlon,start=(/1,1,it-11/)) )
+              call check( nf90_put_var(ncid, id_varlat,xlat,start=(/1,1,it-11/)) )
+              call check( nf90_put_var(ncid, id_varpop,pob,start=(/1,1,it-11/)) )
 			  endif
             end if   ! for kk == 1
-            do i=1, nx
-                do j=1, ny
-				  do l=1,zlev
-                   ea(i,j,l,1)=eft(i,j,ikk,it+1,l) /(CDIM*CDIM)
-				  end do
-                end do
+          do i=1, nx
+            do j=1, ny
+              do l=1,zlev
+                 ea(i,j,l,1)=eft(i,j,ikk,it+1,l) /(CDIM*CDIM)
+              end do
             end do
+          end do
             if(periodo.eq.1) then
                 call check( nf90_put_var(ncid, id_var(isp(ikk)),ea,start=(/1,1,1,it+1/)) )
             else
@@ -483,21 +483,21 @@ tiempo: do it=iit,eit
 		 end do gases
         aerosol: do ikk=ipm-1,ns ! from PM10
 			ea=0.0
-            do i=1, nx
-                do j=1, ny
-			  do l=1,zlev
-				ea(i,j,l,1)=eft(i,j,ikk,it+1,l) /(CDIM*CDIM) !entre 3x3 km
-			  end do
-                end do
+        do i=1, nx
+          do j=1, ny
+            do l=1,zlev
+              ea(i,j,l,1)=eft(i,j,ikk,it+1,l) /(CDIM*CDIM) !entre 3x3 km
             end do
+          end do
+        end do
 !
-            if(periodo.eq.1) then
-                call check( nf90_put_var(ncid, id_var(isp(ikk)),ea*0.8,start=(/1,1,1,it+1/)) )
-                call check( nf90_put_var(ncid, id_var(isp(ikk+5)),ea*0.2,start=(/1,1,1,it+1/)) )
-            else
-                call check( nf90_put_var(ncid, id_var(isp(ikk)),ea*0.8,start=(/1,1,1,it-11/)) )        !******
-                call check( nf90_put_var(ncid, id_var(isp(ikk+5)),ea*0.2,start=(/1,1,1,it-11/)) )        !******
-            endif
+        if(periodo.eq.1) then
+          call check( nf90_put_var(ncid, id_var(isp(ikk)),ea*0.8,start=(/1,1,1,it+1/)) )
+          call check( nf90_put_var(ncid, id_var(isp(ikk+5)),ea*0.2,start=(/1,1,1,it+1/)) )
+        else
+          call check( nf90_put_var(ncid, id_var(isp(ikk)),ea*0.8,start=(/1,1,1,it-11/)) )        !******
+          call check( nf90_put_var(ncid, id_var(isp(ikk+5)),ea*0.2,start=(/1,1,1,it-11/)) )        !******
+        endif
 		 end do aerosol
 		end do tiempo
         call check( nf90_close(ncid) )

@@ -20,6 +20,7 @@
 !   Inclusion de poblacion en la salida     10/06/2014
 !   Para año 2014, ns, ipm, icn             12/07/2017
 !   Dos capas en puntuales                  18707/2017
+!   Se incluyen NO y NO2 de moviles         01/11/2017
 !
 module vars
     integer :: nf    ! number of files antropogenic
@@ -97,7 +98,7 @@ subroutine lee
 	& 'TACO2_2014.csv' ,'TAPM102014.csv','TAPM2_2014.csv',&
 	& 'GSO4_A.txt','PNO3_A.txt','OTHE_A.txt','POA_A.txt','PEC_A.txt',&
     & 'TACH4_2014.csv','TACN__2014.csv'/
-	data fnameM /'TMCO__2014.csv','TMNH3_2014.csv','TMNOx_2014.csv','TMNOx_2014.csv','TMSO2_2014.csv',&
+	data fnameM /'TMCO__2014.csv','TMNH3_2014.csv','TMNO_2014.csv','TMNO2_2014.csv','TMSO2_2014.csv',&
     & 'CBM05_ALD2_M.txt','CBM05_CH4_M.txt','CBM05_ALDX_M.txt' ,'CBM05_ETH_M.txt',&
     & 'CBM05_ETHA_M.txt','CBM05_ETOH_M.txt','CBM05_IOLE_M.txt','CBM05_MEOH_M.txt',&
     & 'CBM05_FORM_M.txt','CBM05_ISOP_M.txt','CBM05_OLE_M.txt','CBM05_PAR_M.txt',&
@@ -312,11 +313,11 @@ subroutine store
      hoy=date(7:8)//'-'//mes(date(5:6))//'-'//date(1:4)//' '//time(1:2)//':'//time(3:4)//':'//time(5:10)
     print *,hoy
     !write(current_date(4:4),'(A1)')char(6+48)
-     do periodo=1,2!2
+     do periodo=1,1!2
 	  if(periodo.eq.1) then
         FILE_NAME='wrfchemi.d01.'//trim(mecha)//'.'//current_date(1:19)         !******
 	   iit= 0
-	   eit= 11 !23
+	   eit= 23 !11
 	   iTime=current_date
 	  else if(periodo.eq.2) then
 	   iit=12
