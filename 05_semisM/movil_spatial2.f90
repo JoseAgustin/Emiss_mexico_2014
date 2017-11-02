@@ -33,7 +33,7 @@ character (len= 4),dimension(fracp) :: polf ! pollutant name fraction file
 ! uf, rf urban and rural population fraction
 ! pemi emission in grid cell,pollutan,scc category
 real,allocatable:: ei(:,:),uf(:),rf(:),pemi(:,:,:),frac(:,:)
-common /vari/ nl,nl2,pol
+common /vari/ nl,nl2,pol,polf
 end module vars
 program movil_spatial
 use vars
@@ -49,6 +49,12 @@ use vars
     call imprime
 	
 contains
+!  _                      _
+! (_)_ __ ___  _ __  _ __(_)_ __ ___   ___
+! | | '_ ` _ \| '_ \| '__| | '_ ` _ \ / _ \
+! | | | | | | | |_) | |  | | | | | | |  __/
+! |_|_| |_| |_| .__/|_|  |_|_| |_| |_|\___|
+!             |_|
 subroutine imprime
     integer i,j,k
 	character(len=15) ::name
@@ -66,14 +72,19 @@ subroutine imprime
 210 format(i6,",",<size(jscc)>(I11,","))
 220 format(i6,",",<size(jscc)>(ES12.4,","),I2)
 end subroutine imprime
-!
+!                                 _        _   _
+!  ___ ___  _ __ ___  _ __  _   _| |_ __ _| |_(_) ___  _ __  ___
+! / __/ _ \| '_ ` _ \| '_ \| | | | __/ _` | __| |/ _ \| '_ \/ __|
+!| (_| (_) | | | | | | |_) | |_| | || (_| | |_| | (_) | | | \__ \
+! \___\___/|_| |_| |_| .__/ \__,_|\__\__,_|\__|_|\___/|_| |_|___/
+!                    |_|
 subroutine computations
 implicit none
   integer i,j,ii,l,k
-	print *,' Start doing computations'
-	print *,(pol(i),i=1,npol)
+	print *,'   ***** Start computations ****'
+	!print *,(pol(i),i=1,npol)
 	call count  ! counts grids and scc different values
-	print *,'end count'
+	print *,'    <<<< END COUNT >>>>'
 	ii=1
    do k=1, size(grid2)
 	do i=1,nl2 ! gri_movil
@@ -94,34 +105,31 @@ implicit none
 	end do !i
 end do! k
 end subroutine computations
+!  _
+! | | ___  ___
+! | |/ _ \/ _ \
+! | |  __/  __/
+! |_|\___|\___|
 !
 subroutine lee
-	implicit none
-	integer:: i,j,iedo
+    implicit none
+    integer:: i,j,iedo
     integer:: anio,cint
     character(len=1):: st
-	character(len=10):: cdum
-    pol(1) ='PM10'
-    pol(2) ='PM25'
-    pol(3) ='NO2'
-    pol(4) ='NO'
-    pol(5) ='SO2'
-    pol(6) ='CO'
-    pol(7) ='VOC'
-    pol(8) ='NH3'
-    pol(9) ='CN'
-    pol(10)='CO2'
-    pol(11)='CH4'
-	print *,'Starts reading files'
-	open(10,file='salida.csv',status='old',action='read')
-	read(10,'(A)') cdum !read header
+    character(len=10):: cdum
+    character(len=13):: cfile
+    cfile='salida.csv'
+    print *,'   STARTS reading file ',cfile
+	open(10,file=cfile,status='old',action='read')
+	read(10,*) cdum,cdum,(pol(i),i=1,npol) !read header
+   !print *,pol
 	i=0
 	do 
 	 read(10,*,END=100)cdum
 	 i=1+i
 	end do
 100 continue
-    print *,'number of lines',i
+    !print *,'number of lines',i
 	rewind(10)
 	read(10,'(A)') cdum ! read header
 	allocate(emid(i),iscc(i),ei(i,npol))
@@ -132,10 +140,12 @@ subroutine lee
 !    print *,emid(i),iscc(i),ei(i,7),im(i)
 !   if(i.eq.4) stop
 	end do
-	print *,'End reading file salida.csv '
+	!print *,'   End reading file ',cfile
 	close(10)
 !
-	open(10,file='gri_movil.csv',status='old',action='read')
+   cfile ='gri_movil.csv'
+   print *,'   STARTS reading file ',cfile
+	open(10,file=cfile,status='old',action='read')
 	read(10,'(A)') cdum !read header line 1
 	read(10,'(A)') cdum !read header line 2
 	i=0
@@ -144,7 +154,7 @@ subroutine lee
 	 i=1+i
 	end do
 110 continue
-    !print *,'number of lines',i
+    !print *,'number of lines',i,' ',cfile
 	rewind(10)
 	read(10,'(A)') cdum !read header line 1
 	read(10,'(A)') cdum !read header line 2
@@ -156,9 +166,10 @@ subroutine lee
     iedo=int(id2(i)/1000)
     if(iedo.eq.2.or.iedo.eq.3) im(i)=8
     if(iedo.eq.8.or.iedo.eq.18.and.iedo.eq.25.and.iedo.eq.26)im(i)=7
+   ! if(iedo.eq.23) im(i)=5
 	!print *,i,grid(i),id2(i),uf(i),rf(i)
 	end do
-	print *,'End reading file gri_movil.csv',nl2
+	!print *,'   End reading file ',cfile,' ',nl2
 	close(10)
 !
 !	Se considera que el 10 % va en carretera 
@@ -171,6 +182,11 @@ subroutine lee
     stop
 160 print *,"Error in reading file gri_movil.csv",i
 end subroutine lee
+!                       _
+!  ___ ___  _   _ _ __ | |_
+! / __/ _ \| | | | '_ \| __|
+!| (_| (_) | |_| | | | | |_
+! \___\___/ \__,_|_| |_|\__|
 !
 !  COUNTING grids, scc
 !
@@ -231,13 +247,20 @@ subroutine count
 !  print *,(jscc(i),i=1,ii)
   deallocate(xl)
 end subroutine count
+!  _
+! | | ___  ___     ___
+! | |/ _ \/ _ \   / _ \
+! | |  __/  __/  |  __/
+! |_|\___|\___|___\___|
+!            |_____|
 subroutine lee_e
-integer i,j,k
-character (len=10) cdum
-
+  integer i,j,k
+  character (len=10) cdum
+  character (len=14) cfile
+  cfile="emiss_2015.csv"
   print *,'Start reading files'
 
-  open (unit=10,file="emiss_2015.csv",status='OLD',ACTION='read')
+  open (unit=10,file=cfile,status='OLD',ACTION='read')
   read (10,*) cdum,cdum,(pol(i),i=1,npol)
   i=0
   do
@@ -245,17 +268,17 @@ character (len=10) cdum
     i=1+i
   end do
   100 continue
-  print *,'number of lines',i
+  print *,'number of lines',i,' in ',cfile
   rewind(10)
   read(10,*) cdum ! read header
   allocate(iest(i),iscc(i),ei(i,npol))
   do j=1,i
     read(10,*)iest(j),iscc(j),(ei(j,k),k=1,npol)
     end do
-  print *,'End reading file emiss_2015.csv '
+  print *,'*** End reading file  ',cfile
   close(10)
-
-  open (unit=10,file="fracc_2008.csv",status='OLD',ACTION='read')
+  cfile="fracc_2008.csv"
+  open (unit=10,file=cfile,status='OLD',ACTION='read')
   read (10,*) cdum,(polf(i),i=1,fracp)
   i=0
   do
@@ -263,37 +286,38 @@ character (len=10) cdum
     i=1+i
   end do
   200 continue
-  print *,'number of lines',i
+  print *,'number of lines',i,' in ',cfile
   rewind(10)
   read(10,*) cdum ! read header
   allocate(cventmun(i),frac(i,npol))
   do j=1,i
     read(10,*)cventmun(j),(frac(j,k),k=1,fracp)
   end do
-  print *,'End reading file fracc_2008.csv '
+  print *,'*** End reading file ',cfile
   close(10)
 end subroutine lee_e
-
+!                            _
+!   __ _ _   _  __ _ _ __ __| | __ _
+!  / _` | | | |/ _` | '__/ _` |/ _` |
+! | (_| | |_| | (_| | | | (_| | (_| |
+!  \__, |\__,_|\__,_|_|  \__,_|\__,_|
+!  |___/
 subroutine guarda
-integer i,j,k,l
-real,dimension(npol):: mm
+  integer i,j,k,l
+  real,dimension(npol):: mm
   open (unit=11,file='salida.csv')
   write(11,110) "CVENTMUN","SCC",(pol(i),i=1,npol)
   do i=1,nstates
     do j= 1,size(iest)
       do k=i,size(cventmun)
         if(iest(j).eq.i .and. cventmun(k)/1000.eq.i) then
-          mm(1)=ei(j,1)*frac(k,1)
-          mm(2)=ei(j,2)*frac(k,2)
-          mm(3)=ei(j,3)*frac(k,3)
-          mm(4)=ei(j,4)*frac(k,3)
-          mm(5)=ei(j,5)*frac(k,4)
-          mm(6)=ei(j,6)*frac(k,5)
-          mm(7)=ei(j,7)*frac(k,6)
-          mm(8)=ei(j,8)*frac(k,7)
-          mm(9)=ei(j,9)*frac(k,8)
-          mm(10)=ei(j,10)*frac(k,9)
-          mm(11)=ei(j,11)*frac(k,10)
+            do l=1,npol
+              do m=1,fracp
+            if(trim(pol(l)).eq.trim(polf(m))) mm(l)=ei(j,l)*frac(k,m)
+            if(trim(pol(l)).eq."NO" .and.trim(polf(m)).eq."NOx") mm(l)=ei(j,l)*frac(k,m)
+            if(trim(pol(l)).eq."NO2".and.trim(polf(m)).eq."NOx") mm(l)=ei(j,l)*frac(k,m)
+              end do
+            end do
           write(11,120)cventmun(k),iscc(j),(mm(l),l=1,npol)
         end if
       end do
