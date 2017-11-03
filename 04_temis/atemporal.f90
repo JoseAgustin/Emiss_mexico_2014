@@ -2,7 +2,7 @@
 !	atemporal.f90
 !	
 !
-!	 Creado por Jose Agustin Garcia Reynoso 25/05/12.
+!   Creado por Jose Agustin Garcia Reynoso 12/07/2017.
 !
 ! Proposito:
 !          Realiza la distribucion temporal de las emisiones de area
@@ -15,22 +15,21 @@
 !   14/08/2012  nombre archivos de PM 
 !   02/10/2012  Ajuste en horas dia previo subroutina lee
 !   10/07/2017  Para 2014 nnscc 57 a 58, inclusion del 76914 y BC, CO2 y METH
-!   12/07/2017  Revision linea 173 se incluye else deallocate. Falta revisar 170
+!   12/07/2017  Revision linea 158 se incluye else deallocate. Falta revisar 155
+!    2/11/2017  Huso horario se calcula con el estado
 !
 module variables
 integer :: month,daytype
-integer :: nf !number of emission files
-integer :: nnscc !max number of scc descriptors in input files
+integer,parameter :: nf=10 !number of emission files
+integer,parameter :: nnscc=58 !max number of scc descriptors in input files
+integer,parameter ::juliano=365
+integer,parameter :: nh=24 ! number of hour per day
 integer :: nm ! line number in emissions file
-integer :: nh ! number of hour per day
 integer :: lh ! line number in uso horario
-integer ::juliano
-parameter (nf=10,nh=24, nnscc=58,juliano=365)
 integer,dimension(nf) :: nscc ! number of scc codes per file
 integer*8,dimension(nnscc) ::iscc 
 integer, allocatable :: idcel(:),idcel2(:),idcel3(:)
-integer, allocatable :: idsm(:),idsmh(:) ! state municipality IDs emiss and usoH
-integer, allocatable :: mst(:)  ! Difference in number of hours (CST, PST, MST,EST)
+integer, allocatable :: idsm(:) ! state municipality IDs emiss and usoH
 real ::fweek
 real,allocatable ::emiA(:,:,:) !Area emisions from files cel,ssc,file
 real,allocatable :: emis(:,:,:) ! Emission by cel,file and hour (inorganic)
@@ -52,14 +51,13 @@ character(len=14),dimension(nf) ::efile,casn
 &           'TACO__2014.csv','TAPM102014.csv','TACO2_2014.csv',&
 &           'TACN__2014.csv','TACH4_2014.csv','TAPM2_2014.csv',&
 &           'TAVOC_2014.csv'/
-common /vars/ fweek,nscc,lh,month,daytype,mes,dia,hora,current_date
+common /vars/ fweek,nscc,nm,lh,month,daytype,mes,dia,hora,current_date
 end module
 !
 !  Progran  atemporal.f90
 !
 !  Make the temporal distribution of emissions
 !
-
 program atemporal 
    use variables
    
@@ -70,7 +68,12 @@ program atemporal
    call storage
    
 contains
-
+!  _
+! | | ___  ___
+! | |/ _ \/ _ \
+! | |  __/  __/
+! |_|\___|\___|
+!
 subroutine lee
 	implicit none 
 	integer i,j,k,l,m
@@ -114,25 +117,6 @@ subroutine lee
     fweek= 7./daym(month)
     print *,'Done fecha.txt : ',current_date,month,idia,fweek
 !
-    print *,"READING huso_horario.csv file"
-    open (unit=10,file='huso_horario.csv',status='OLD',action='read')
-    lh=0
-    read(10,*)cdum
-        do
-        read(10,*,end=90)cdum
-        lh=lh+1
-        end do
-90  continue
-    print *,'Line number in uso hor',lh
-    allocate(idsmh(lh),mst(lh))
-    rewind(10)
-    read (10,'(A)') cdum
-    do i=1,lh
-    read (10,*) idsmh(i),mst(i)
-    end do
-    print *,'Done huso_horario.csv :'
-    close(10)
-!
 !   Days in 2014 year
 !
     print *,"READING anio2014.csv file"
@@ -167,11 +151,12 @@ subroutine lee
 	 rewind(10)
 	 if(k.eq.1) then
         allocate(idcel(nm),idcel2(nm),idcel3(nm),idsm(nm))
-        allocate(emiA(nf,76916,nnscc))
+        allocate(emiA(nf,76941,nnscc)) ! Numero de lineas
         idsm=0
     else
         deallocate(idcel,idcel2,idcel3,idsm)
         allocate(idcel(nm),idcel2(nm),idcel3(nm),idsm(nm))
+        idsm=0
 	end if
 	read (10,'(A)') cdum
 	read (10,'(A)') cdum
@@ -181,7 +166,7 @@ subroutine lee
 	end do
     idcel3=idcel
 	close(10)
-	print *,"Done reading: ",efile(k)
+  print *,"Done reading: ",efile(k),size(idcel3)
 !  REading and findig monthly, week and houry code profiles
     inquire(15,opened=fil1)
     if(.not.fil1) then
@@ -395,7 +380,12 @@ print *,'   Done ',nfile,daytype,maxval(hCST)!,maxval(hPST),maxval(hMST)
 	close(18)
     close(19)
 end subroutine lee
-!
+!                                 _
+!  ___ ___  _ __ ___  _ __  _   _| |_ ___
+! / __/ _ \| '_ ` _ \| '_ \| | | | __/ _ \
+!| (_| (_) | | | | | | |_) | |_| | ||  __/
+! \___\___/|_| |_| |_| .__/ \__,_|\__\___|
+!                    |_|
 subroutine compute
 	implicit none
 	integer i,j,k,l,ival,ii
@@ -410,6 +400,7 @@ subroutine compute
     mes=mes*fweek! weeks per month
     do k=1,nf-2
       print *,efile(k)
+!dir$ loop count min(512)
 	  do ii=1,size(idcel2)
 	  do i=1,nm
 		 if(idcel2(ii).eq.idcel(i))then
@@ -451,7 +442,7 @@ subroutine compute
     evoc=0
 	k=nf
 
-print *,"   Compute  VOCs"
+print *,"   Compute  VOCs",size(idcel2)
    do ii=1,size(idcel2)
     do i=1,nm
      if(idcel2(ii).eq.idcel(i))then
@@ -468,6 +459,12 @@ print *,"   Compute  VOCs"
     end do
 	end subroutine compute
 !
+!     _
+! ___| |_ ___  _ __ __ _  __ _  ___
+!/ __| __/ _ \| '__/ _` |/ _` |/ _ \
+!\__ \ || (_) | | | (_| | (_| |  __/
+!|___/\__\___/|_|  \__,_|\__, |\___|
+!                         |___/
 subroutine storage
   implicit none
   integer i,j,k,l
@@ -511,19 +508,26 @@ subroutine storage
     print *,"*****  DONE Temporal Area *****"
 110 format(I7,",",I10,",",23(ES12.3,","),ES12.3)
 end subroutine storage
-
+!                       _
+!  ___ ___  _   _ _ __ | |_
+! / __/ _ \| | | | '_ \| __|
+!| (_| (_) | |_| | | | | |_
+! \___\___/ \__,_|_| |_|\__|
+!
 subroutine count
   integer i,j
   integer idum
-  do i=1,nm-1
-    do j=1,nm-i
-     if(idcel3(j).gt.idcel3(j+1)) then
-       idum = idcel3(j)
-       idcel3(j)=idcel3(j+1)
-       idcel3(j+1)=idum
-     end if
-    end do
-  end do
+!  Se ordenan los indices
+  call hpsort(size(idcel3))
+!  do i=1,nm-1
+!    do j=1,nm-i
+!     if(idcel3(j).gt.idcel3(j+1)) then
+!       idum = idcel3(j)
+!       idcel3(j)=idcel3(j+1)
+!       idcel3(j+1)=idum
+!     end if
+!    end do
+!  end do
   idcel2(1)=idcel3(1)
   j=1
   do i=2,nm
@@ -532,27 +536,41 @@ subroutine count
 	idcel2(j)=idcel3(i)
 	end if
   end do
+  deallocate(idcel3)
+  allocate(idcel3(j))
   print *,'Number of different cells',j
+
   open(unit=123,file="index.csv")
   write(123,*)j,"Index"
   do i=1,j
    write(123,'(I8)')idcel2(i)
+   idcel3(i)=idcel2(i)
   end do
+  deallocate(idcel2)
+  allocate(idcel2(j))
+  idcel2=idcel3
   close(123)
   allocate(emis(j,nf-2,nh))
   allocate(epm2(j,nscc(nf-1),nh),evoc(j,nscc(nf),nh))
    emis=0
    evoc=0
-  !deallocate(idcel3)
+  deallocate(idcel3)
 end subroutine count
+!  _                        _                          _
+! | |__  _   _ ___  ___    | |__   ___  _ __ __ _ _ __(_) ___
+! | '_ \| | | / __|/ _ \   | '_ \ / _ \| '__/ _` | '__| |/ _ \
+! | | | | |_| \__ \ (_) |  | | | | (_) | | | (_| | |  | | (_) |
+! |_| |_|\__,_|___/\___/___|_| |_|\___/|_|  \__,_|_|  |_|\___/
+!                     |_____|
 subroutine huso_horario
-    integer ::i,j
+    integer ::i,iedo
     print *,'Start uso horario'
     do i=1,nm
-        do j=1,lh
-         if(idsm(i).eq.idsmh(j))idsm(i)=mst(j)
-        end do
-      ! write(122,*)idsm(i)
+        iedo=int(idsm(i)/1000)
+        idsm(i)=6
+        if(iedo.eq.2 .or.iedo.eq.3) idsm(i)=8
+        if(iedo.eq.8 .or.iedo.eq.18 .and.iedo.eq.25 .and.iedo.eq.26)idsm(i)=7
+        if(iedo.eq.23) idsm(i)=5
     end do
     if(maxval(idsm).ge.9 ) then
         print *,'Error item:', MAXLOC(idsm),'value:', idsm(MAXLOC(idsm)),maxval(idsm)
@@ -562,6 +580,59 @@ subroutine huso_horario
         print *,'Error item:', MINLOC(idsm),'value:', idsm(MINLOC(idsm)),minval(idsm)
         STOP 'Value must be larger or equal to 5'
     end if
-
 end subroutine huso_horario
+subroutine hpsort(n)
+    implicit none
+    integer n
+    integer i,ir,j,l
+    real rra
+    if (n.lt.2) return
+    l=n/2+1
+    ir=n
+10 continue
+    if(l.gt.1)then
+        l=l-1
+        rra=idcel3(l)
+    else
+        rra=idcel3(ir)
+        idcel3(ir)=idcel3(1)
+        ir=ir-1
+        if(ir.eq.1)then
+          idcel3(1)=rra
+          return
+        endif
+    endif
+    i=l
+    j=l+l
+20 if(j.le.ir)then
+    if(j.lt.ir)then
+      if(idcel3(j).lt.idcel3(j+1))j=j+1
+    end if
+    if(rra.lt.idcel3(j))then
+        idcel3(i)=idcel3(j)
+        i=j
+        j=j+j
+    else
+        j=ir+1
+    endif
+    goto 20
+    endif
+      idcel3(i)=rra
+    goto 10
+end subroutine hpsort
+subroutine piksrt(n)
+INTEGER n
+integer i,j
+real a
+do j=2,N
+a=idcel3(j)
+do i=j-1,1,-1
+if(idcel3(i).le.a) goto 10
+idcel3(i+1)=idcel3(i)
+end do
+i=0
+10 idcel3(i+1)=a
+end do
+return
+end subroutine piksrt
 end program atemporal
