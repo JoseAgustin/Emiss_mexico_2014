@@ -2,36 +2,45 @@
 !
 !  ifort -O3 -axAVX -o MSpatial.exe movil_spatial.f90
 !
-!  Creado por Jose Agustin Garcia Reynoso el 25/05/2012
+!  Creado por Jose Agustin Garcia Reynoso el 1/11/2017
 ! 
 !
 ! Proposito
 !          Distribución espacial de las emisiones de fuentes moviles
-!          Program that reads EI2008 and spatial allocation
+!          Program that reads MOVES2015 and spatial allocation
 !
-!   Usa F_moviles.csv
+!   Usa emiss_2015,csv, fracc_2008.csv, salida.csv, gri_movil.csv
 !
 !  Cambios
 !       Se incluye Carbono Negro
 module vars
-integer nl   !  Number of lines in F_movil.csv
+integer nl   !  Number of lines in salida.csv
 integer nl2  !  Number of lines in gri_movil.csv
-integer npol !  Number of pollutants
-parameter (npol=10 )
+integer,parameter :: npol=11 !  Number of pollutants
+integer,parameter :: nstates=32
+integer,parameter :: fracp=10
+integer,allocatable :: iest(:)  ! estados
+integer,allocatable :: cventmun(:) !estado_municipio
+
 integer,allocatable :: id(:),id2(:) !State Mun code in emis and grid files
 integer,allocatable ::grid(:),grid2(:) ! gridcode in gri_pob
 integer,allocatable :: im(:),im2(:)  ! time lag emis and grid files
 ! scc code in emis and subset of different scc codes.
 integer*8,allocatable ::iscc(:),jscc(:),emid(:) ! emid edo mun id
 character (len= 4),dimension(npol) :: pol ! pollutant name
+character (len= 4),dimension(fracp) :: polf ! pollutant name fraction file
 ! ei emission in emissfile (nl dimension)
 ! uf, rf urban and rural population fraction
 ! pemi emission in grid cell,pollutan,scc category
-real,allocatable:: ei(:,:),uf(:),rf(:),pemi(:,:,:)
+real,allocatable:: ei(:,:),uf(:),rf(:),pemi(:,:,:),frac(:,:)
 common /vari/ nl,nl2,pol
 end module vars
 program movil_spatial
 use vars
+
+    call lee_e
+
+    call guarda
 
     call lee
 
@@ -49,7 +58,7 @@ subroutine imprime
 	write(10,*)'GRIDCODE emissions in g per year'
 	write(10,210)size(jscc),(jscc(j),j=1,size(jscc))
 	do k=1,size(grid2)
-	  write(10,220) grid2(k),(1000000*pemi(k,i,j),j=1,size(jscc)),im2(k)
+	  write(10,220) grid2(k),(1000*pemi(k,i,j),j=1,size(jscc)),im2(k)
 	end do
 	close(10)
 	end do
@@ -94,16 +103,17 @@ subroutine lee
 	character(len=10):: cdum
     pol(1) ='PM10'
     pol(2) ='PM25'
-    pol(3) ='NOx'
-    pol(4) ='SO2'
-    pol(5) ='CO'
-    pol(6) ='VOC'
-    pol(7) ='NH3'
-    pol(8) ='CN'
-    pol(9) ='CO2'
-    pol(10)='CH4'
+    pol(3) ='NO2'
+    pol(4) ='NO'
+    pol(5) ='SO2'
+    pol(6) ='CO'
+    pol(7) ='VOC'
+    pol(8) ='NH3'
+    pol(9) ='CN'
+    pol(10)='CO2'
+    pol(11)='CH4'
 	print *,'Starts reading files'
-	open(10,file='F_moviles_SS.csv',status='old',action='read')
+	open(10,file='salida.csv',status='old',action='read')
 	read(10,'(A)') cdum !read header
 	i=0
 	do 
@@ -122,7 +132,7 @@ subroutine lee
 !    print *,emid(i),iscc(i),ei(i,7),im(i)
 !   if(i.eq.4) stop
 	end do
-	print *,'End reading file F_moviles.csv '
+	print *,'End reading file salida.csv '
 	close(10)
 !
 	open(10,file='gri_movil.csv',status='old',action='read')
@@ -157,7 +167,7 @@ subroutine lee
 	uf=uf*0.90
 	rf=rf*0.10
 	return
-140 print *,"Error in reading file F_moviles_SS.csv",i
+140 print *,"Error in reading file salida.csv",i
     stop
 160 print *,"Error in reading file gri_movil.csv",i
 end subroutine lee
@@ -221,4 +231,73 @@ subroutine count
 !  print *,(jscc(i),i=1,ii)
   deallocate(xl)
 end subroutine count
+subroutine lee_e
+integer i,j,k
+character (len=10) cdum
+
+  print *,'Start reading files'
+
+  open (unit=10,file="emiss_2015.csv",status='OLD',ACTION='read')
+  read (10,*) cdum,cdum,(pol(i),i=1,npol)
+  i=0
+  do
+    read(10,*,END=100)cdum
+    i=1+i
+  end do
+  100 continue
+  print *,'number of lines',i
+  rewind(10)
+  read(10,*) cdum ! read header
+  allocate(iest(i),iscc(i),ei(i,npol))
+  do j=1,i
+    read(10,*)iest(j),iscc(j),(ei(j,k),k=1,npol)
+    end do
+  print *,'End reading file emiss_2015.csv '
+  close(10)
+
+  open (unit=10,file="fracc_2008.csv",status='OLD',ACTION='read')
+  read (10,*) cdum,(polf(i),i=1,fracp)
+  i=0
+  do
+    read(10,*,END=200)cdum
+    i=1+i
+  end do
+  200 continue
+  print *,'number of lines',i
+  rewind(10)
+  read(10,*) cdum ! read header
+  allocate(cventmun(i),frac(i,npol))
+  do j=1,i
+    read(10,*)cventmun(j),(frac(j,k),k=1,fracp)
+  end do
+  print *,'End reading file fracc_2008.csv '
+  close(10)
+end subroutine lee_e
+
+subroutine guarda
+integer i,j,k,l
+real,dimension(npol):: mm
+  open (unit=11,file='salida.csv')
+  write(11,110) "CVENTMUN","SCC",(pol(i),i=1,npol)
+  do i=1,nstates
+    do j= 1,size(iest)
+      do k=i,size(cventmun)
+        if(iest(j).eq.i .and. cventmun(k)/1000.eq.i) then
+          do l=1,npol
+            do m=1,fracp
+              if(trim(pol(l)).eq.trim(polf(m))) mm(l)=ei(j,l)*frac(k,m)
+              if(trim(pol(l)).eq."NO" .and.trim(polf(m)).eq."NOx") mm(l)=ei(j,l)*frac(k,m)
+              if(trim(pol(l)).eq."NO2".and.trim(polf(m)).eq."NOx") mm(l)=ei(j,l)*frac(k,m)
+            end do
+          end do
+          write(11,120)cventmun(k),iscc(j),(mm(l),l=1,npol)
+        end if
+      end do
+    end do
+  end do
+  deallocate(iest,iscc,ei,cventmun,frac)
+  close(11)
+  110 format(A,11(",",A),",",A)
+  120 format(I6,",",I10,",",<npol-1>(F12.1,","),F12.1)
+end subroutine guarda
 end program
