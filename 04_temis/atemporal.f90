@@ -12,11 +12,12 @@
 !
 !
 !   modificado
-!   14/08/2012  nombre archivos de PM 
+!   14/08/2012  Nombre archivos de PM
 !   02/10/2012  Ajuste en horas dia previo subroutina lee
-!   10/07/2017  Para 2014 nnscc 57 a 58, inclusion del 76914 y BC, CO2 y METH
-!   12/07/2017  Revision linea 158 se incluye else deallocate. Falta revisar 155
+!   10/07/2017  Para 2014 nnscc 52, inclusion del 37123 y BC, CO2 y METH
+!   12/07/2017  Revision linea 158 se incluye else deallocate. Falta revisar 155 DONE
 !    2/11/2017  Huso horario se calcula con el estado
+!    5/11/2017  Actualizacion en numero de lineas totales en emiA
 !
 module variables
 integer :: month,daytype
@@ -24,6 +25,7 @@ integer,parameter :: nf=10 !number of emission files
 integer,parameter :: nnscc=58 !max number of scc descriptors in input files
 integer,parameter ::juliano=365
 integer,parameter :: nh=24 ! number of hour per day
+integer :: nmax !number of max lines in emiA
 integer :: nm ! line number in emissions file
 integer :: lh ! line number in uso horario
 integer,dimension(nf) :: nscc ! number of scc codes per file
@@ -135,6 +137,12 @@ subroutine lee
     close(10)
 	if(daytype.eq.0) STOP 'Error in daytype=0'
 !
+    call EXECUTE_COMMAND_LINE("wc -l AV*.csv >sal")
+    open (unit=10,file='sal',status='OLD')
+    read (10,*)nmax
+    !print '(I6)',nmax
+    close(10)
+    call EXECUTE_COMMAND_LINE("rm sal")
 	do k=1,nf
 	open (unit=10,file=efile(k),status='OLD',action='read')
 	read (10,'(A)') cdum
@@ -147,11 +155,12 @@ subroutine lee
 	   nm=nm+1
 	end do
 100	 continue
-     print *,"  mn= ",nm
+     write(6,134)"  mn=",nm,"nmax=",nmax
+    if (nm.gt.nmax) STOP "*** ERROR: nm larger than nmax edit code line 140"
 	 rewind(10)
 	 if(k.eq.1) then
         allocate(idcel(nm),idcel2(nm),idcel3(nm),idsm(nm))
-        allocate(emiA(nf,76941,nnscc)) ! Numero de lineas
+        allocate(emiA(nf,nmax,nnscc))
         idsm=0
     else
         deallocate(idcel,idcel2,idcel3,idsm)
@@ -374,11 +383,12 @@ print *,'   Done ',nfile,daytype,maxval(hCST)!,maxval(hPST),maxval(hMST)
 	 !end do
 	 print *,'   Done ',nfilep,daytype,maxval(hEST)!,maxval(hPST),maxval(hMST)
 	end do ! K
-	close(15)
-	close(16)
-	close(17)
-	close(18)
+    close(15)
+    close(16)
+    close(17)
+    close(18)
     close(19)
+134 FORMAT(4x,A5,x,I6,x,A5,I6)
 end subroutine lee
 !                                 _
 !  ___ ___  _ __ ___  _ __  _   _| |_ ___
@@ -519,15 +529,7 @@ subroutine count
   integer idum
 !  Se ordenan los indices
   call hpsort(size(idcel3))
-!  do i=1,nm-1
-!    do j=1,nm-i
-!     if(idcel3(j).gt.idcel3(j+1)) then
-!       idum = idcel3(j)
-!       idcel3(j)=idcel3(j+1)
-!       idcel3(j+1)=idum
-!     end if
-!    end do
-!  end do
+
   idcel2(1)=idcel3(1)
   j=1
   do i=2,nm
@@ -581,6 +583,12 @@ subroutine huso_horario
         STOP 'Value must be larger or equal to 5'
     end if
 end subroutine huso_horario
+!  _                          _
+! | |__  _ __  ___  ___  _ __| |_
+! | '_ \| '_ \/ __|/ _ \| '__| __|
+! | | | | |_) \__ \ (_) | |  | |_
+! |_| |_| .__/|___/\___/|_|   \__|
+!       |_|
 subroutine hpsort(n)
     implicit none
     integer n
