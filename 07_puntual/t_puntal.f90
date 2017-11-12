@@ -388,10 +388,10 @@ subroutine guarda
 		close(unit=10)
 	end do
      print *,"****** DONE PUNTUAL *****"
-210 format(I8,',',I3,',',23(ES,","),ES,I3)
+210 format(I8,',',I3,',',23(ES,","),ES,",",I3)
 220 format(f10.6,',',f10.4,',',I3,',',23(ES,","),ES)
 300 format(I10,',',f10.6,',',f10.4,',',I3,',',23(ES,","),ES)
-310 format(I10,',',I8,',',I3,',',23(ES,","),ES,I3)
+310 format(I10,',',I8,',',I3,',',23(ES,","),ES,",",I3)
 end subroutine guarda
 !
    Subroutine localization(xlat,xlon,mi,mj,clat,clon,ist,jst,nst)
