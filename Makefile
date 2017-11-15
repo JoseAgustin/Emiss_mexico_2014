@@ -1,64 +1,41 @@
-#	Top-level Makefile for interp2wrf conversion program
+#	Top-level Makefile for Emiss_mexico conversion program
 
 #	Macros, these should be generic for all machines
 
 .IGNORE:
-
-AR	=	ar ru
-CD	=	cd
-LN	=	ln -s
-MAKE	=	make -i -f Makefile
-RM	=	/bin/rm -f
-RM_LIST	=	*.mod *.o *.f core .tmpfile *.exe
-INTEL_LIB =	/opt/intel/lib
+MAKE    =       make -i -f Makefile
+CD      =       cd
 #	Targets for supported architectures
 
 default:
-	uname -a > .tmpfile
-		grep Linux .tmpfile ; \
-	if [ $$? = 0 ]; then echo "Compiling for Linux" ;		\
-		( $(CD) src ; $(MAKE) all				\
-		"RM		= $(RM)" 	"RM_LIST	= $(RM_LIST)"	\
-		"LN		= $(LN)" 	"MACH		= DEC"		\
-		"MAKE		= $(MAKE)"	"CPP		= /lib/cpp"	\
-		"CPPFLAGS	= -I. -C -traditional"	\
-		"FC		= ifort"	"FCFLAGS	= -D$(MACH) -I. -convert big_endian -pc32 -FR -tpp7 -xW"\
-		"LDOPTIONS	= -convert big_endian -pc32 -tpp7 -xW"	"CFLAGS		= -I."		\
-		"LOCAL_LIBRARIES= " ) ; \
-	else \
-		grep Darwin .tmpfile ; \
-	if [ $$? = 0 ]; then echo "Compiling for Darwin" ;		\
-		( $(CD) 02_aemis ; $(MAKE) all				\
-		"RM		= $(RM)" 	"RM_LIST	= $(RM_LIST)"	\
-		"LN		= $(LN)" 	"MACH		= DEC"		\
-		"MAKE		= $(MAKE)"	"CPP		= fpp"	\
-		"CPPFLAGS	= -I. -C "	\
-		"FC		= ifort"	"FCFLAGS	= -fast -axAVX  -align commons"\
-		"LDOPTIONS	= -fast -axAVX  -align commons "\
-		"CFLAGS		= -I."		\
-		"LOCAL_LIBRARIES=  " ) ; \
-		( $(CD) 03_movilspatial ; $(MAKE) all				\
-		"RM		= $(RM)" 	"RM_LIST	= $(RM_LIST)"	\
-		"LN		= $(LN)" 	"MACH		= DEC"		\
-		"MAKE		= $(MAKE)"	"CPP		= fpp"	\
-		"CPPFLAGS	= -I. -C "	\
-		"FC		= ifort"	"FCFLAGS	= -fast -FR -align commons"\
-		"LDOPTIONS	=  -fast -align commons "\
-		"CFLAGS		= -I."		\
-		"LOCAL_LIBRARIES=  " ) ; \
-	else echo "Do not know how to compile for the `cat .tmpfile` machine." \
-		fi ; \
-		fi ; \
-	fi ; \
-		( $(RM) interp_emis.exe ; $(LN) src/interp_emis.exe . ) ;
+	( $(CD) 02_aemis   ; $(MAKE)  );\
+	( $(CD) 03_movilspatial ; $(MAKE)  );\
+	( $(CD) 04_temis   ; $(MAKE) );\
+	( $(CD) 05_semisM  ; $(MAKE) );\
+	( $(CD) 06_temisM  ; $(MAKE) );\
+	( $(CD) 07_puntual ; $(MAKE) );\
+	( $(CD) 08_spec    ; $(MAKE) );\
+	( $(CD) 09_pm25spec; $(MAKE) );\
+	( $(CD) 10_storage ; $(MAKE) )
 
 code:
-	( $(CD) 02_aemis ; $(MAKE) code					\
-	"MAKE			=	$(MAKE)"			\
-	"CPPFLAGS		=	-I. -C -P -DDEC"		)
-
+	( $(CD) 02_aemis ; $(MAKE) code);\
+	( $(CD) 03_movilspatial ; $(MAKE) code);\
+	( $(CD) 04_temis   ; $(MAKE) code "FC= ifort" );\
+	( $(CD) 05_semisM  ; $(MAKE) code  "FC= ifort");\
+	( $(CD) 06_temisM  ; $(MAKE) code  );\
+	( $(CD) 07_puntual ; $(MAKE) code  );\
+	( $(CD) 08_spec    ; $(MAKE) code  );\
+	( $(CD) 09_pm25spec; $(MAKE) code  );\
+	( $(CD) 10_storage ; $(MAKE) code  )
 clean:
-	( $(CD) 02_aemis   ; $(MAKE) clean "CD = $(CD)" "RM = $(RM)" "RM_LIST = $(RM_LIST)" );\
-        ( $(CD) 03_movilspatial ; $(MAKE) clean "CD = $(CD)" "RM = $(RM)" "RM_LIST = $(RM_LIST)" )
+	( $(CD) 02_aemis   ; $(MAKE) clean  );\
+	( $(CD) 03_movilspatial ; $(MAKE) clean);\
+	( $(CD) 04_temis   ; $(MAKE) clean  );\
+	( $(CD) 05_semisM  ; $(MAKE) clean  );\
+	( $(CD) 06_temisM  ; $(MAKE) clean  );\
+	( $(CD) 07_puntual ; $(MAKE) clean  );\
+	( $(CD) 08_spec    ; $(MAKE) clean  );\
+	( $(CD) 09_pm25spec; $(MAKE) clean  );\
+	( $(CD) 10_storage ; $(MAKE) clean  )
 
-	$(RM) $(RM_LIST)

@@ -1,5 +1,5 @@
 #  
-#	Lower level Makefile for 03_movilspatial
+#	Lower level Makefile for 05_semisM
 #
 #       Suffix rules and commands
 #######################
@@ -7,10 +7,15 @@ FIX01 =
 #######################
 
 
-objec1 = suma_carretera.o
-objec2 = suma_vialidades.o
-objec3 = agrega.o
-RM_LIST =       *.mod *.o core .tmpfile *.exe
+objects = movil_spatial.o
+
+AR      =       ar ru
+CD      =       cd
+LN      =       ln -s
+MAKE    =       make -i -f Makefile
+RM      =       /bin/rm -f
+RM_LIST =       *.mod *.o *.f core .tmpfile *.exe 
+INTEL_LIB =     /opt/intel/lib
 
 # Ejecuta
 default:
@@ -42,27 +47,13 @@ default:
 	fi ; \
 	fi ; \
 
-# Ejecuta
-all :	carr.exe vial.exe agrega.exe
+all :	MSpatial.exe
 
-carr.exe: $(objec1)
-	$(FC) -o $@ $(objec1) $(LDOPTIONS)
+MSpatial.exe: $(objects)
+	$(FC) -o $@ $(objects) $(LDOPTIONS)
 
-suma_carretera.o: suma_carretera.f90
+movil_spatial.o: movil_spatial.f90
 	$(FC) -c $< $(FCFLAGS)
  
-vial.exe: $(objec2)
-	$(FC) -o $@ $(objec2) $(LDOPTIONS)
-
-suma_vialidades.o: suma_vialidades.f90
-	$(FC) -c $< $(FCFLAGS)
-
-agrega.exe: $(objec3)
-	$(FC) -o $@ $(objec3) $(LDOPTIONS)
-
-agrega.o: agrega.f90
-	$(FC) -c $< $(FCFLAGS)
-
-
 clean:
 		$(RM) $(RM_LIST)
