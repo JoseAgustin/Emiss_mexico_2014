@@ -6,6 +6,7 @@
 a.out
 salida*
 *.log
+.tmpfile
 libnetcdf*
 02_Aemis2
 02_aemis/A*14.csv
