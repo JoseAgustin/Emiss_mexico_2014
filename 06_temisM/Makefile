@@ -1,5 +1,5 @@
 #  
-#	Lower level Makefile for 05_semisM
+#	Lower level Makefile for 06_temisM
 #
 #       Suffix rules and commands
 #######################

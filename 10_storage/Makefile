@@ -1,5 +1,5 @@
 #  
-#	Lower level Makefile for 08_spec
+#	Lower level Makefile for 10_storage
 #
 #       Suffix rules and commands
 #######################

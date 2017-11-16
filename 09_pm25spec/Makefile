@@ -1,5 +1,5 @@
 #  
-#	Lower level Makefile for 08_spec
+#	Lower level Makefile for 09_pm25spec
 #
 #       Suffix rules and commands
 #######################
