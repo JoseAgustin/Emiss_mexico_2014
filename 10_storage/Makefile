@@ -26,7 +26,7 @@ default:
 	"CPPFLAGS       = -I. -C -traditional"  \
 	"FC             = ifort"   "CFLAGS         = -I."       \
 	"LDOPTIONS      = -fast -axAVX  -align commons  -lnetcdff -L$(NETCDF)/lib ”          \
-	"FCFLAGS        = -fast -axAVX  -align commons -I$(NETCDF)/include ”
+	"FCFLAGS        = -fast -axAVX  -align commons -I$(NETCDF)/include ” \
 	"LOCAL_LIBRARIES= " ) ; \
 	else \
 	grep Darwin .tmpfile ; \
