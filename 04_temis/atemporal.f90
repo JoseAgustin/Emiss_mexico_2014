@@ -18,6 +18,7 @@
 !   12/07/2017  Revision linea 158 se incluye else deallocate. Falta revisar 155 DONE
 !    2/11/2017  Huso horario se calcula con el estado
 !    5/11/2017  Actualizacion en numero de lineas totales en emiA
+!   15/11/2017  Seleccion de numero de linea mayor de los datos de entrada emiA
 !
 module variables
 integer :: month,daytype
@@ -91,7 +92,7 @@ subroutine lee
 	!          jan feb mar apr may jun jul aug sep oct nov dec
 	data daym /31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31/
 
-	print *,"READING fecha.txt file"
+   print *,"READING fecha.txt file"
 	open (unit=10,file='fecha.txt',status='OLD',action='read')
 	read (10,*)month  
 	read (10,*)idia
@@ -137,12 +138,8 @@ subroutine lee
     close(10)
 	if(daytype.eq.0) STOP 'Error in daytype=0'
 !
-    call EXECUTE_COMMAND_LINE("wc -l AV*.csv >sal")
-    open (unit=10,file='sal',status='OLD')
-    read (10,*)nmax
-    !print '(I6)',nmax
-    close(10)
-    call EXECUTE_COMMAND_LINE("rm sal")
+   call maxline(nmax)
+
 	do k=1,nf
 	open (unit=10,file=efile(k),status='OLD',action='read')
 	read (10,'(A)') cdum
@@ -628,6 +625,28 @@ subroutine hpsort(n)
       idcel3(i)=rra
     goto 10
 end subroutine hpsort
+!                       _ _
+!  _ __ ___   __ ___  _| (_)_ __   ___
+! | '_ ` _ \ / _` \ \/ / | | '_ \ / _ \
+! | | | | | | (_| |>  <| | | | | |  __/
+! |_| |_| |_|\__,_/_/\_\_|_|_| |_|\___|
+!
+subroutine maxline(entero)
+    integer,intent(out):: entero
+    integer:: k,lmin
+    character(len=25):: str
+    lmin=-1
+    do k=1,nf
+      str="wc -l "//efile(k)//" >sal"
+      call EXECUTE_COMMAND_LINE(str)
+      open (unit=10,file='sal',status='OLD')
+      read (10,*) lmin
+      entero=max(lmin,entero)
+      !print '(I6)',entero
+      close(10)
+    end do
+    call EXECUTE_COMMAND_LINE("rm sal")
+end subroutine maxline
 subroutine piksrt(n)
 INTEGER n
 integer i,j
