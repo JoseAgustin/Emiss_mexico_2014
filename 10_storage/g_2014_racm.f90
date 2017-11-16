@@ -21,7 +21,7 @@
 !   Para año 2014    ipm,icn,jcn,imt,jmt    12/07/2017
 !   Dos capas en puntuales                  18707/2017
 !
-module vars
+module varsr
     integer :: nf    ! number of files antropogenic
     integer :: ns    ! number of compounds
     integer ::ncel   ! number of cell in the grid
@@ -74,10 +74,10 @@ module vars
     common /domain/ ncel,nl,nx,ny,zlev
     common /date/ current_date,cday,mecha,cname
 
-end module vars
+end module varsr
 
 program guarda_nc
-use vars
+use varsr
 use netcdf
 
 	call lee

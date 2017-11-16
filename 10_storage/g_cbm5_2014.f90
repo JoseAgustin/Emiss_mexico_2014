@@ -22,7 +22,7 @@
 !   Dos capas en puntuales                  18707/2017
 !   Se incluyen NO y NO2 de moviles         01/11/2017
 !
-module vars
+module varsc
     integer :: nf    ! number of files antropogenic
     integer :: ns    ! number of compounds
     integer ::ncel   ! number of cell in the grid
@@ -65,10 +65,10 @@ module vars
 
     common /domain/ ncel,nl,nx,ny,zlev
     common /date/ current_date,cday,mecha,cname
-end module vars
+end module varsc
 
 program guarda_nc
-use vars
+use varsc
 use netcdf
 
 	call lee

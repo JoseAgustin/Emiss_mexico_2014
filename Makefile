@@ -9,14 +9,14 @@ CD      =       cd
 
 default:
 	( $(CD) 02_aemis   ; $(MAKE)  );\
-	( $(CD) 03_movilspatial ; $(MAKE)  );\
+	( $(CD) 03_movilspatial ; $(MAKE) -j 3 );\
 	( $(CD) 04_temis   ; $(MAKE) );\
 	( $(CD) 05_semisM  ; $(MAKE) );\
 	( $(CD) 06_temisM  ; $(MAKE) );\
 	( $(CD) 07_puntual ; $(MAKE) );\
-	( $(CD) 08_spec    ; $(MAKE) );\
-	( $(CD) 09_pm25spec; $(MAKE) );\
-	( $(CD) 10_storage ; $(MAKE) )
+	( $(CD) 08_spec    ; $(MAKE) -j 3);\
+	( $(CD) 09_pm25spec; $(MAKE) -j 3 );\
+	( $(CD) 10_storage ; $(MAKE) -j 4 )
 
 code:
 	( $(CD) 02_aemis ; $(MAKE) code);\

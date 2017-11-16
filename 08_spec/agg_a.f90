@@ -14,7 +14,7 @@
 !  compile:
 !  ifort -O2 -axAVX  agg_a.f90 -o spa.exe
 !
-module var_agg
+module var_agga
 integer :: nh     !number of hours in a day
 integer :: nclass !number the clasess in profiles_spc.txt
 integer :: nspecies ! max number species in profile 0 (292)
@@ -34,10 +34,10 @@ character (len=19) :: current_date,cprof
 parameter (nspecies=292,nh=24,ncat=40)
 
 common /date/ current_date,cdia,cprof
-end module var_agg
+end module var_agga
 
 program agg_a
-use var_agg
+use var_agga
 
 	call lee
 	
