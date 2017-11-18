@@ -487,7 +487,7 @@ implicit none
 integer, INTENT(IN)  :: perfili,idia
 integer, INTENT(OUT) :: perfilo
 
-if (perfili.eq.2012) then; perfilo=perfili+(idia-1)*100
+if (perfili.eq.2013) then; perfilo=perfili+(idia-1)*100
 else;perfilo=perfili;end if
 
 end subroutine adecua
