@@ -13,13 +13,14 @@
 !
 !  Cambios
 !       Se incluye Carbono Negro
+!       18/11/2017  Se incluyen GSO4, OTHER, POA
 !
 module vars
 integer nl   !  Number of lines in salida.csv
 integer nl2  !  Number of lines in gri_movil.csv
-integer,parameter :: npol=11 !  Number of pollutants
+integer,parameter :: npol=14 !  Number of pollutants
 integer,parameter :: nstates=32
-integer,parameter :: fracp=10
+integer,parameter :: fracp=10 ! Number of
 integer,allocatable :: iest(:)  ! estados
 integer,allocatable :: cventmun(:) !estado_municipio
 
@@ -28,8 +29,8 @@ integer,allocatable ::grid(:),grid2(:) ! gridcode in gri_pob
 integer,allocatable :: im(:),im2(:)  ! time lag emis and grid files
 ! scc code in emis and subset of different scc codes.
 integer*8,allocatable ::iscc(:),jscc(:),emid(:) ! emid edo mun id
-character (len= 4),dimension(npol) :: pol ! pollutant name
-character (len= 4),dimension(fracp) :: polf ! pollutant name fraction file
+character (len= 5),dimension(npol) :: pol ! pollutant name
+character (len= 5),dimension(fracp) :: polf ! pollutant name fraction file
 ! ei emission in emissfile (nl dimension)
 ! uf, rf urban and rural population fraction
 ! pemi emission in grid cell,pollutan,scc category
@@ -102,20 +103,9 @@ subroutine lee
     integer:: anio,cint
     character(len=1):: st
 	character(len=10):: cdum
-    pol(1) ='PM10'
-    pol(2) ='PM25'
-    pol(3) ='NO2'
-    pol(4) ='NO'
-    pol(5) ='SO2'
-    pol(6) ='CO'
-    pol(7) ='VOC'
-    pol(8) ='NH3'
-    pol(9) ='CN'
-    pol(10)='CO2'
-    pol(11)='CH4'
 	print *,'Starts reading files'
 	open(10,file='salida.csv',status='old',action='read')
-	read(10,'(A)') cdum !read header
+	read(10,*) cdum,cdum,(pol(i),i=1,npol) !read header
 	i=0
 	do 
 	 read(10,*,END=100)cdum
@@ -128,10 +118,8 @@ subroutine lee
 	allocate(emid(i),iscc(i),ei(i,npol))
 	nl=i
 	do i=1,nl
-!	read(10,*,ERR=140) anio,emid(i),st,emid(i),cdum,cdum,iscc(i),cint,cint,(ei(i,j),j=1,npol)
       read(10,*,ERR=140)emid(i),iscc(i),(ei(i,j),j=1,npol)
-!    print *,emid(i),iscc(i),ei(i,7),im(i)
-!   if(i.eq.4) stop
+!    print *,emid(i),iscc(i),ei(i,7)
 	end do
 	print *,'End reading file salida.csv '
 	close(10)
@@ -289,6 +277,9 @@ real,dimension(npol):: mm
               if(trim(pol(l)).eq.trim(polf(m))) mm(l)=ei(j,l)*frac(k,m)
               if(trim(pol(l)).eq."NO" .and.trim(polf(m)).eq."NOx") mm(l)=ei(j,l)*frac(k,m)
               if(trim(pol(l)).eq."NO2".and.trim(polf(m)).eq."NOx") mm(l)=ei(j,l)*frac(k,m)
+              if(trim(pol(l)).eq."GSO4".and.trim(polf(m)).eq."PM25") mm(l)=ei(j,l)*frac(k,m)
+              if(trim(pol(l)).eq."OTHER".and.trim(polf(m)).eq."PM25") mm(l)=ei(j,l)*frac(k,m)
+              if(trim(pol(l)).eq."POA".and.trim(polf(m)).eq."PM25") mm(l)=ei(j,l)*frac(k,m)
             end do
           end do
           write(11,120)cventmun(k),iscc(j),(mm(l),l=1,npol)
@@ -298,7 +289,7 @@ real,dimension(npol):: mm
   end do
   deallocate(iest,iscc,ei,cventmun,frac)
   close(11)
-  110 format(A,11(",",A),",",A)
+  110 format(A,14(",",A),",",A)
   120 format(I6,",",I10,",",<npol-1>(F12.1,","),F12.1)
 end subroutine guarda
 end program

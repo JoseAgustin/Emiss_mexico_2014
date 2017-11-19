@@ -11,8 +11,6 @@
 !
 ! ifort -O2 -axAVX -lnetcdff -L$NETCDF/lib -I$NETCDF/include g_saprc_2014.f90 -o saprc.exe
 !
-!   Si son mas de 8 capas arreglar linea 219
-!      eeft(i,j,ii,ih,9-levl)=eft(i,j,ii,ih,9-levl)+edum(ih)/WTM(ii)
 !
 !   Actualizacion de xlat, xlon              26/08/2012
 !   Conversion de unidades en aerosoles      04/10/2012
@@ -181,18 +179,16 @@ DATA scalp /  1.00,1.00,1.00,1.00,1.00,1.00, 1.00,1.00,1.00,1.00,1.00,1.00,& !
 	do k=1,ncel
 	read(10,*) idcg(k),lon(k),lat(k),i,pop(k),utmx(k),utmy(k),utmz(k)
 	end do
+    xlon= RESHAPE(lon  ,(/nx,ny/))
+    xlat= RESHAPE(xlat ,(/nx,ny/))
 !
-    do i=1,nx
-        do j=1,ny
-            k=i+(j-1)*nx
-            xlon(i,j)=lon(k)
-            xlat(i,j)=lat(k)
-            pob(i,j)=pop(k)
-            utmxd(i,j)=utmx(k)
-            utmyd(i,j)=utmy(k)
-            utmzd(i,j)=utmz(k)
-        end do
-    end do
+    pob = RESHAPE(pob  ,(/nx,ny/))
+!
+    utmxd=RESHAPE(utmxd,(/nx,ny/))
+!
+    utmyd=RESHAPE(utmyd,(/nx,ny/))
+!
+    utmzd=RESHAPE(utmzd,(/nx,ny/))
 !   print *,ncel,xlon(1,1),xlat(1,1)
 	close(10)
 

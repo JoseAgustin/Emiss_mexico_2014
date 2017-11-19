@@ -14,6 +14,7 @@
 !   10/07/2017  Para 2014 nnscc 57 a 58, inclusion del 76946 y BC, CO2 y hEST
 !   21/07/2017  Incluye CO2 y CH4
 !   01/11/2017  Incluye NO y NO2
+!   18/11/2017  Incluye GSO4, POA and OTHE
 !
 module variables
 integer :: month
@@ -24,7 +25,7 @@ integer :: nnscc !max number of scc descriptors in input files
 integer :: nm ! line number in emissions file
 integer :: nh ! number of hour per day
 integer ::juliano
-parameter (nf=11, nh=24, nnscc=36,juliano=366)
+parameter (nf=14, nh=24, nnscc=36,juliano=366)
 integer,dimension(nf) :: nscc ! number of scc codes per file
 integer*8,dimension(nnscc) ::iscc 
 integer, allocatable :: idcel(:),idcel2(:)
@@ -43,12 +44,13 @@ character(len=14),dimension(nf) ::efile,casn
 
  data efile / 'M_CO.csv' ,'M_NH3.csv' ,'M_NO2.csv','M_NO.csv',&
               'M_SO2.csv','M_CN.csv' ,'M_CO2.csv','M_CH4.csv',&
-              'M_PM10.csv','M_PM25.csv','M_VOC.csv'/
+              'M_PM10.csv','M_GSO4.csv','M_POA.csv','M_OTHER.csv',&
+              'M_PM25.csv','M_VOC.csv'/
 
  data casn /'TMCO__2014.csv','TMNH3_2014.csv','TMNO2_2014.csv', &
             'TMNO_2014.csv ','TMSO2_2014.csv','TMCN__2014.csv', &
             'TMCO2_2014.csv','TMCH4_2014.csv','TMPM102014.csv', &
-            'TMPM2_2014.csv','TMCOV_2014.csv'/
+            'GSO4_M.csv','POA_M.csv','OTHE_M.csv','TMPM2_2014.csv','TMCOV_2014.csv'/
 
 common /vars/ fweek,nscc,nm,month,daytype,perfil,mes,dia,hora,current_date
 end module
