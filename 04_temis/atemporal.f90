@@ -632,20 +632,23 @@ end subroutine hpsort
 ! |_| |_| |_|\__,_/_/\_\_|_|_| |_|\___|
 !
 subroutine maxline(entero)
+    implicit none
     integer,intent(out):: entero
-    integer:: k,lmin
-    character(len=25):: str
-    lmin=-1
+    integer:: k,inum
+    character(len=14):: cdum
+    entero=-1
     do k=1,nf
-      str="wc -l "//efile(k)//" >sal"
-      call EXECUTE_COMMAND_LINE(str)
-      open (unit=10,file='sal',status='OLD')
-      read (10,*) lmin
-      entero=max(lmin,entero)
+      open(unit=14,file=efile(k),status='OLD')
+       inum=0
+      do
+        read(14,*,end=100) cdum
+        inum=inum+1
+      end do
+100   close(14)
+       inum=inum-2
+      entero=max(inum,entero)
       !print '(I6)',entero
-      close(10)
     end do
-    call EXECUTE_COMMAND_LINE("rm sal")
 end subroutine maxline
 subroutine piksrt(n)
 INTEGER n
