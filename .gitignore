@@ -6,6 +6,7 @@
 a.out
 salida*
 *.log
+*.xlsx
 .tmpfile
 libnetcdf*
 02_Aemis2
@@ -15,6 +16,9 @@ index.csv
 04_temis/TA*csv
 05_semisM/M_*.csv
 06_temisM/TM*.csv
+06_temisM/GSO4_M.csv
+06_temisM/OTHE_M.csv
+06_temisM/POA_M.csv
 07_puntual/T_ANN*.csv
 08_spec/RA*txt
 08_spec/SAP*txt
@@ -25,7 +29,6 @@ index.csv
 09_pm25spec/*M.txt
 10_storage/wrfc*
 Comentarios.docx
-Especiacion_2.xls
 Fuentes_de_Area
 Informe_19072017.docx
 Inventario.Data

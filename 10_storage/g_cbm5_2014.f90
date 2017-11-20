@@ -21,6 +21,7 @@
 !   Para año 2014, ns, ipm, icn             12/07/2017
 !   Dos capas en puntuales                  18707/2017
 !   Se incluyen NO y NO2 de moviles         01/11/2017
+!   Se lee CDIM y titulo de localiza.csv    19/11/2017
 !
 module varsc
     integer :: nf    ! number of files antropogenic
@@ -45,6 +46,7 @@ module varsc
     real,allocatable :: utmx(:),utmy(:)
     real,allocatable :: xlon(:,:),xlat(:,:),pob(:,:)
     real,allocatable :: utmxd(:,:),utmyd(:,:)
+    real :: CDIM      ! celdimension in km
 
     parameter(nf=30,ns=28,radm=ns+5,nh=24)
 	
@@ -62,9 +64,9 @@ module varsc
     'PM_10','PM_25 ','Sulfates ','Nitrates ','PM25I',&
     'Organic ','Elemental Carbon','SulfatesJ','NitratesJ','PM25J','Organic','Elemental Carbon'/)
     character (len=19) :: current_date,current_datem,mecha
-
-    common /domain/ ncel,nl,nx,ny,zlev
-    common /date/ current_date,cday,mecha,cname
+    character (len=40)  ::titulo
+    common /domain/ ncel,nl,nx,ny,zlev,CDIM
+    common /date/ current_date,cday,mecha,cname,titulo
 end module varsc
 
 program guarda_nc
@@ -118,24 +120,28 @@ subroutine lee
        DATA WTM /28., 17., 30., 46., 64.,32.,  16., 32., 32.,32.,32.,&   !
 	   &         64., 16., 16., 80., 32.,16., 160.,112.,128., 44.,&
 	   &      3600.,3600.,3600.,3600.,3600.,3600.,3600./ ! MW 3600 for unit conversion to ug/s
+
 !    SCALA      CO   NH3  NO   NO2  SO2 ALD2   CH4  ALDx  ETH ETHA ETOH
 !             IOLE  MEOH HCHO ISOP  OLE  PAR   TERP  TOL  XYL  CO2
 !             PM10 PM2.5 PSO4 PNO3 OTHER POA   PEC  CH4   CN
 DATA scala /  1.00,1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,& !
 &             1.00,1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,&
 &             1.00,1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00/
+
 DATA scalm /  1.00,1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,& !
 &             1.00,1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,10.0,&
 &             1.00,1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00/
+
 DATA scalp /  1.00,1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,& !
 &             1.00,1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,0.00,&
 &             1.00,1.00,1.00,1.00,1.00,1.00,  1.00,0.00,0.00/
+
        mecha="CMB05"
 	write(6,*)' >>>> Reading file -  localiza.csv ---------'
 
 	open (unit=10,file='localiza.csv',status='old',action='read')
 	read (10,*) cdum  !Header
-	read (10,*) nx,ny  !Header
+	read (10,*) nx,ny,titulo  !Header
 	ncel=nx*ny
 	allocate(idcg(ncel),lon(ncel),lat(ncel),pop(ncel))
    allocate(utmx(ncel),utmy(ncel),utmz(ncel))
@@ -159,8 +165,10 @@ DATA scalp /  1.00,1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,& !
             utmzd(i,j)=utmz(k)
         end do
     end do
-!   print *,ncel,xlon(1,1),xlat(1,1)
+    CDIM=(utmx(2)-utmx(1))/1000.  ! from meters to km
+    print *,CDIM,trim(titulo)
 	close(10)
+
 	do ii=1,nf
 		open(11,file=fnameA(ii),status='OLD',action='READ')
         read(11,*)cdum
@@ -256,7 +264,8 @@ DATA scalp /  1.00,1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,& !
               eft(i,j,is,ih,levld)=eft(i,j,is,ih,levld)+edum(ih)/WTM(is)*scalp(ii)
             end if
 			  end do
-              zlev =max(zlev,levl,levld)
+          zlev =max(zlev,levl,levld)
+          if(zlev.gt.8) Stop "*** Change dimension line allocate(eft.."
 			  exit busca3
 			end if
 		 end do
@@ -345,7 +354,7 @@ subroutine store
     dimids4 = (/id_dim(3),id_dim(4),id_dim(6),id_dim(1)/)
     print *,"Attributos Globales NF90_GLOBAL"
     !Attributos Globales NF90_GLOBAL
-    call check( nf90_put_att(ncid, NF90_GLOBAL, "TITLE","EI 2014 emissions for Mexico Area"))
+    call check( nf90_put_att(ncid, NF90_GLOBAL, "TITLE",titulo))
     call check( nf90_put_att(ncid, NF90_GLOBAL, "START_DATE",iTime))
     call check( nf90_put_att(ncid, NF90_GLOBAL, "DAY ",cday))
     call check( nf90_put_att(ncid, NF90_GLOBAL, "SIMULATION_START_DATE",iTime))
@@ -354,8 +363,8 @@ subroutine store
     call check( nf90_put_att(ncid, NF90_GLOBAL, "BOTTOM-TOP_GRID_DIMENSION",1))
     call check( nf90_put_att(ncid, NF90_GLOBAL, "DX",CDIM*1000))
     call check( nf90_put_att(ncid, NF90_GLOBAL, "DY",CDIM*1000))
-    call check( nf90_put_att(ncid, NF90_GLOBAL, "CEN_LAT",(MAXVAL(lat)+MINVAL(lat))/2))
-    call check( nf90_put_att(ncid, NF90_GLOBAL, "CEN_LON",(MAXVAL(lon)+MINVAL(lon))/2))
+    call check( nf90_put_att(ncid, NF90_GLOBAL, "CEN_LAT",xlat(nx/2,ny/2)))
+    call check( nf90_put_att(ncid, NF90_GLOBAL, "CEN_LON",xlon(nx/2,ny/2)))
     call check( nf90_put_att(ncid, NF90_GLOBAL, "TRUELAT1",17.5))
     call check( nf90_put_att(ncid, NF90_GLOBAL, "TRUELAT2",29.5))
     call check( nf90_put_att(ncid, NF90_GLOBAL, "MOAD_CEN_LAT",24.020222))

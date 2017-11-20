@@ -11,8 +11,6 @@
 !
 ! ifort -O2 -axAVX -lnetcdff -L$NETCDF/lib -I$NETCDF/include g_2014_racm.f90 -o racm2.exe
 !
-!   Si son mas de 8 capas arreglar linea 219
-!      eeft(i,j,ii,ih,9-levl)=eft(i,j,ii,ih,9-levl)+edum(ih)/WTM(ii)
 !
 !   Actualizacion de xlat, xlon             26/08/2012
 !   Conversion de unidades en aerosoles     04/10/2012
@@ -20,6 +18,7 @@
 !   Inclusion de poblacion en la salida     10/06/2014
 !   Para año 2014    ipm,icn,jcn,imt,jmt    12/07/2017
 !   Dos capas en puntuales                  18707/2017
+!   Se lee CDIM y titulo de localiza.csv    19/11/2017
 !
 module varsr
     integer :: nf    ! number of files antropogenic
@@ -44,6 +43,7 @@ module varsr
     real,allocatable :: utmx(:),utmy(:)
     real,allocatable :: xlon(:,:),xlat(:,:),pob(:,:)
     real,allocatable :: utmxd(:,:),utmyd(:,:)
+    real :: CDIM      ! celdimension in km
 
   parameter(nf=55,ns=53,radm=ns+5,nh=24)
 
@@ -70,9 +70,9 @@ module varsr
   'Sulfates ','Nitrates ','OTHER PM25I','Organic ','Elemental Carbon ',&
   'SulfatesJ','NitratesJ','OTHER PM25J','OrganicJ','Elemental CarbonJ'/)
   character (len=19) :: current_date,current_datem,mecha
-
+  character (len=40) :: titulo
     common /domain/ ncel,nl,nx,ny,zlev
-    common /date/ current_date,cday,mecha,cname
+    common /date/ current_date,cday,mecha,cname,titulo
 
 end module varsr
 
@@ -172,7 +172,7 @@ DATA scalp /  1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,& !
 
 	open (unit=10,file='localiza.csv',status='old',action='read')
 	read (10,*) cdum  !Header
-	read (10,*) nx,ny  !Header
+	read (10,*) nx,ny,titulo  ! Dimensions and Title
 	ncel=nx*ny
     allocate(idcg(ncel),lon(ncel),lat(ncel),pop(ncel))
     allocate(utmx(ncel),utmy(ncel),utmz(ncel))
@@ -196,7 +196,8 @@ DATA scalp /  1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,& !
       utmzd(i,j)=utmz(k)
     end do
   end do
-!   print *,ncel,xlon(1,1),xlat(1,1)
+  CDIM=(utmx(2)-utmx(1))/1000.  ! from meters to km
+  print *,CDIM,trim(titulo)
   close(10)
 
   do ii=1,nf
@@ -293,8 +294,9 @@ DATA scalp /  1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,& !
             else
               eft(i,j,is,ih,levld)=eft(i,j,is,ih,levld)+edum(ih)/WTM(is)*scalp(ii)
             end if
-			  end do
-              zlev =max(zlev,levl,levld)
+          end do
+          zlev =max(zlev,levl,levld)
+          if(zlev.gt.8) Stop "*** Change dimension line  allocate(eft.."
 			  exit busca3
 			end if
 		 end do
@@ -315,28 +317,27 @@ end subroutine calculos
 
 subroutine store
     IMPLICIT NONE
-      integer :: NDIMS
-      parameter (NDIMS=6)
-      integer :: i,j,k,l
-      integer :: ncid
-      integer :: periodo,iit,eit,it
-      integer :: ikk
-      integer :: dimids2(2),dimids3(3),dimids4(4)
-      integer,dimension(radm+1):: id_var
-      integer :: id_varlong,id_varlat,id_varpop
-      integer :: id_utmx,id_utmy,id_utmz
-      integer :: id,iu
-      integer :: isp(radm)
-      integer,dimension(NDIMS):: dim,id_dim
-      real,ALLOCATABLE :: ea(:,:,:,:)
-      real :: CDIM=9.0  ! celdimension in km
-      character (len=19),dimension(NDIMS) ::sdim
-      character(len=39):: FILE_NAME
-      character(len=19),dimension(1,1)::Times
-      character(len=19):: iTime
-      character(8)  :: date
-      character(10) :: time
-      character(24) :: hoy
+    integer :: NDIMS
+    parameter (NDIMS=6)
+    integer :: i,j,k,l
+    integer :: ncid
+    integer :: periodo,iit,eit,it
+    integer :: ikk
+    integer :: dimids2(2),dimids3(3),dimids4(4)
+    integer,dimension(radm+1):: id_var
+    integer :: id_varlong,id_varlat,id_varpop
+    integer :: id_utmx,id_utmy,id_utmz
+    integer :: id,iu
+    integer :: isp(radm)
+    integer,dimension(NDIMS):: dim,id_dim
+    real,ALLOCATABLE :: ea(:,:,:,:)
+    character (len=19),dimension(NDIMS) ::sdim
+    character(len=39):: FILE_NAME
+    character(len=19),dimension(1,1)::Times
+    character(len=19):: iTime
+    character(8)  :: date
+    character(10) :: time
+    character(24) :: hoy
   	   DATA isp / 1, 2, 3, 4, 5, 6, 7, 8, 9,10, &
                  11,12,13,14,15, 16,17,18,19,20, &
                  21,22,23,24,25, 26,27,28,29,30,&
@@ -380,36 +381,36 @@ subroutine store
          call check( nf90_def_dim(ncid, sdim(i), dim(i), id_dim(i)) )
        end do
 
-    dimids2 = (/id_dim(2),id_dim(1)/)
-    dimids3 = (/id_dim(3),id_dim(2),id_dim(1) /)
-    dimids4 = (/id_dim(3),id_dim(4),id_dim(6),id_dim(1)/)
-    print *,"Attributos Globales NF90_GLOBAL"
-    !Attributos Globales NF90_GLOBAL
-    call check( nf90_put_att(ncid, NF90_GLOBAL, "TITLE","EI 2014 emissions for Mexico Area"))
-    call check( nf90_put_att(ncid, NF90_GLOBAL, "START_DATE",iTime))
-    call check( nf90_put_att(ncid, NF90_GLOBAL, "DAY ",cday))
-    call check( nf90_put_att(ncid, NF90_GLOBAL, "SIMULATION_START_DATE",iTime))
-    call check( nf90_put_att(ncid, NF90_GLOBAL, "WEST-EAST_GRID_DIMENSION",nx))
-    call check( nf90_put_att(ncid, NF90_GLOBAL, "SOUTH-NORTH_GRID_DIMENSION",ny))
-    call check( nf90_put_att(ncid, NF90_GLOBAL, "BOTTOM-TOP_GRID_DIMENSION",1))
-    call check( nf90_put_att(ncid, NF90_GLOBAL, "DX",CDIM*1000))
-    call check( nf90_put_att(ncid, NF90_GLOBAL, "DY",CDIM*1000))
-    call check( nf90_put_att(ncid, NF90_GLOBAL, "CEN_LAT",(MAXVAL(lat)+MINVAL(lat))/2))
-    call check( nf90_put_att(ncid, NF90_GLOBAL, "CEN_LON",(MAXVAL(lon)+MINVAL(lon))/2))
-    call check( nf90_put_att(ncid, NF90_GLOBAL, "TRUELAT1",17.5))
-    call check( nf90_put_att(ncid, NF90_GLOBAL, "TRUELAT2",29.5))
-    call check( nf90_put_att(ncid, NF90_GLOBAL, "MOAD_CEN_LAT",24.020222))
-    call check( nf90_put_att(ncid, NF90_GLOBAL, "STAND_LON",-102.036352))
-    call check( nf90_put_att(ncid, NF90_GLOBAL, "POLE_LAT",90.))
-    call check( nf90_put_att(ncid, NF90_GLOBAL, "POLE_LON",0.))
-    call check( nf90_put_att(ncid, NF90_GLOBAL, "GRIDTYPE","C"))
-    call check( nf90_put_att(ncid, NF90_GLOBAL, "GMT",12.))
-    call check( nf90_put_att(ncid, NF90_GLOBAL, "JULYR",2014))
-    call check( nf90_put_att(ncid, NF90_GLOBAL, "JULDAY",40))
-    call check( nf90_put_att(ncid, NF90_GLOBAL, "MAP_PROJ",1))
-    call check( nf90_put_att(ncid, NF90_GLOBAL, "MMINLU","USGS"))
-    call check( nf90_put_att(ncid, NF90_GLOBAL, "MECHANISM",mecha))
-    call check( nf90_put_att(ncid, NF90_GLOBAL, "CREATION_DATE",hoy))
+      dimids2 = (/id_dim(2),id_dim(1)/)
+      dimids3 = (/id_dim(3),id_dim(2),id_dim(1) /)
+      dimids4 = (/id_dim(3),id_dim(4),id_dim(6),id_dim(1)/)
+      print *,"Attributos Globales NF90_GLOBAL"
+      !Attributos Globales NF90_GLOBAL
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "TITLE",titulo))
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "START_DATE",iTime))
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "DAY ",cday))
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "SIMULATION_START_DATE",iTime))
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "WEST-EAST_GRID_DIMENSION",nx))
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "SOUTH-NORTH_GRID_DIMENSION",ny))
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "BOTTOM-TOP_GRID_DIMENSION",1))
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "DX",CDIM*1000))
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "DY",CDIM*1000))
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "CEN_LAT",xlat(nx/2,ny/2)))
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "CEN_LON",xlon(nx/2,ny/2)))
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "TRUELAT1",17.5))
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "TRUELAT2",29.5))
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "MOAD_CEN_LAT",24.020222))
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "STAND_LON",-102.036352))
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "POLE_LAT",90.))
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "POLE_LON",0.))
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "GRIDTYPE","C"))
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "GMT",12.))
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "JULYR",2014))
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "JULDAY",40))
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "MAP_PROJ",1))
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "MMINLU","USGS"))
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "MECHANISM",mecha))
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "CREATION_DATE",hoy))
 
 	print *,"Define las variables"
 !  Define las variables
@@ -437,26 +438,26 @@ subroutine store
         call check(nf90_put_att(ncid,id_varpop,"description","Population in each grid"))
         call check( nf90_put_att(ncid, id_varpop, "units", "number"))
     ! Para Mercator
-    call check( nf90_def_var(ncid, "UTMx", NF90_REAL,(/id_dim(3),id_dim(4)/),id_utmx ) )
-    ! Assign  attributes
-      call check( nf90_put_att(ncid, id_utmx, "FieldType", 104 ) )
-      call check( nf90_put_att(ncid, id_utmx, "MemoryOrder", "XYZ") )
-      call check( nf90_put_att(ncid, id_utmx, "description", "UTM coordinate west-east") )
-      call check( nf90_put_att(ncid, id_utmx, "units", "km"))
-      call check( nf90_put_att(ncid, id_utmx, "axis", "X") )
-    call check( nf90_def_var(ncid, "UTMy", NF90_REAL,(/id_dim(3),id_dim(4)/),id_utmy ) )
-    ! Assign  attributes
-      call check( nf90_put_att(ncid, id_utmy, "FieldType", 104 ) )
-      call check( nf90_put_att(ncid, id_utmy, "MemoryOrder", "XYZ") )
-      call check( nf90_put_att(ncid, id_utmy, "description", "UTM coordinate sotuth-north") )
-      call check( nf90_put_att(ncid, id_utmy, "units", "km"))
-      call check( nf90_put_att(ncid, id_utmy, "axis", "Y") )
-    call check( nf90_def_var(ncid, "UTMz", NF90_INT,(/id_dim(3),id_dim(4)/),id_utmz ) )
-    ! Assign  attributes
-      call check( nf90_put_att(ncid, id_utmz, "FieldType", 104 ) )
-      call check( nf90_put_att(ncid, id_utmz, "MemoryOrder", "XYZ") )
-      call check( nf90_put_att(ncid, id_utmz, "description", "UTM Zone") )
-      call check( nf90_put_att(ncid, id_utmz, "units", "None"))
+      call check( nf90_def_var(ncid, "UTMx", NF90_REAL,(/id_dim(3),id_dim(4)/),id_utmx ) )
+      ! Assign  attributes
+        call check( nf90_put_att(ncid, id_utmx, "FieldType", 104 ) )
+        call check( nf90_put_att(ncid, id_utmx, "MemoryOrder", "XYZ") )
+        call check( nf90_put_att(ncid, id_utmx, "description", "UTM coordinate west-east") )
+        call check( nf90_put_att(ncid, id_utmx, "units", "km"))
+        call check( nf90_put_att(ncid, id_utmx, "axis", "X") )
+      call check( nf90_def_var(ncid, "UTMy", NF90_REAL,(/id_dim(3),id_dim(4)/),id_utmy ) )
+      ! Assign  attributes
+        call check( nf90_put_att(ncid, id_utmy, "FieldType", 104 ) )
+        call check( nf90_put_att(ncid, id_utmy, "MemoryOrder", "XYZ") )
+        call check( nf90_put_att(ncid, id_utmy, "description", "UTM coordinate sotuth-north") )
+        call check( nf90_put_att(ncid, id_utmy, "units", "km"))
+        call check( nf90_put_att(ncid, id_utmy, "axis", "Y") )
+      call check( nf90_def_var(ncid, "UTMz", NF90_INT,(/id_dim(3),id_dim(4)/),id_utmz ) )
+      ! Assign  attributes
+        call check( nf90_put_att(ncid, id_utmz, "FieldType", 104 ) )
+        call check( nf90_put_att(ncid, id_utmz, "MemoryOrder", "XYZ") )
+        call check( nf90_put_att(ncid, id_utmz, "description", "UTM Zone") )
+        call check( nf90_put_att(ncid, id_utmz, "units", "None"))
 	do i=1,radm
 		if(i.lt.ipm-1 ) then
 			call crea_attr(ncid,4,dimids4,ename(i),cname(i),id_var(i))
@@ -468,9 +469,9 @@ subroutine store
 !   Terminan definiciones
 		call check( nf90_enddef(ncid) )
 !  Coordenadas Mercator UTM
-    call check( nf90_put_var(ncid, id_utmx,utmxd,start=(/1,1/)) )
-    call check( nf90_put_var(ncid, id_utmy,utmyd,start=(/1,1/)) )
-    call check( nf90_put_var(ncid, id_utmz,utmzd,start=(/1,1/)) )
+      call check( nf90_put_var(ncid, id_utmx,utmxd,start=(/1,1/)) )
+      call check( nf90_put_var(ncid, id_utmy,utmyd,start=(/1,1/)) )
+      call check( nf90_put_var(ncid, id_utmz,utmzd,start=(/1,1/)) )
 !
 !    Inicia loop de tiempo
 tiempo: do it=iit,eit
@@ -500,11 +501,11 @@ tiempo: do it=iit,eit
           endif
             end if   ! for kk == 1
             do i=1, nx
-                do j=1, ny
-				  do l=1,zlev
-                   ea(i,j,l,1)=eft(i,j,ikk,it+1,l) /(CDIM*CDIM)
-				  end do
+              do j=1, ny
+                do l=1,zlev
+                ea(i,j,l,1)=eft(i,j,ikk,it+1,l) /(CDIM*CDIM)
                 end do
+              end do
             end do
             if(periodo.eq.1) then
                 call check( nf90_put_var(ncid, id_var(isp(ikk)),ea,start=(/1,1,1,it+1/)) )
@@ -513,14 +514,14 @@ tiempo: do it=iit,eit
             endif
 		 end do gases
         aerosol: do ikk=ipm-1,ns ! from PM10
-			ea=0.0
-            do i=1, nx
-                do j=1, ny
-			  do l=1,zlev
-				ea(i,j,l,1)=eft(i,j,ikk,it+1,l) /(CDIM*CDIM) !entre 3x3 km
-			  end do
-                end do
+           ea=0.0
+          do i=1, nx
+            do j=1, ny
+              do l=1,zlev
+                ea(i,j,l,1)=eft(i,j,ikk,it+1,l) /(CDIM*CDIM)
+              end do
             end do
+          end do
 !
             if(periodo.eq.1) then
                 call check( nf90_put_var(ncid, id_var(isp(ikk)),ea*0.8,start=(/1,1,1,it+1/)) )

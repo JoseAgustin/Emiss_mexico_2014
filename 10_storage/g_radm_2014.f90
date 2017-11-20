@@ -11,8 +11,6 @@
 !
 ! ifort -O2 -axAVX -lnetcdff -L$NETCDF/lib -I$NETCDF/include g_radm_2014.f90 -o radm2.exe
 !
-!   Si son mas de 8 capas arreglar linea 219
-!      eeft(i,j,ii,ih,9-levl)=eft(i,j,ii,ih,9-levl)+edum(ih)/WTM(ii)
 !
 !   Actualizacion de xlat, xlon             26/08/2012
 !   Conversion de unidades en aerosoles     04/10/2012
@@ -21,6 +19,7 @@
 !   Para año 2014                           12/07/2017
 !   Dos capas en puntuales                  18/07/2017
 !   Se incluyen NO y NO2 de moviles         01/11/2017
+!   Se lee CDIM y titulo de localiza.csv    19/11/2017
 !
 module vars
     integer :: nf    ! number of files antropogenic
@@ -45,6 +44,7 @@ module vars
     real,allocatable :: lon(:),lat(:),pop(:)
     real,allocatable ::xlon(:,:),xlat(:,:),pob(:,:)
     real,allocatable :: utmxd(:,:),utmyd(:,:)
+    real :: CDIM      ! celdimension in km
 
 	parameter(nf=36,ns=34,radm=ns+5,nh=24)
 	
@@ -62,8 +62,9 @@ module vars
 	'TOLUENE  ','XYLENE  ','Carbon Dioxide','PM_10','PM_25 ','Sulfates ','Nitrates ','PM25I',&
 	'Organic ','Elemental Carbon  ','SulfatesJ','NitratesJ','PM25J','Organic','Elemental Carbon'/)
     character (len=19) :: current_date,current_datem,mecha
-    common /domain/ ncel,nl,nx,ny,zlev
-    common /date/ current_date,cday,mecha,cname
+    character (len=40) :: titulo
+    common /domain/ ncel,nl,nx,ny,zlev,CDIM
+    common /date/ current_date,cday,mecha,cname,titulo
 end module vars
 
 program guarda_nc
@@ -115,7 +116,6 @@ subroutine lee
     & 'RADM-2_XYL_P.txt','T_ANNCO2.csv','T_ANNPM10.csv','T_ANNPM25.csv', &
     & 'GSO4_P.txt','PNO3_P.txt','OTHE_P.txt','POA_P.txt','PEC_P.txt',&
     & 'T_ANNCH4.csv','T_ANNCN.csv'/
-
 ! Mole weight
   DATA WTM /28., 17., 30, 46., 64.,   44.,16.,108.,30.,58.,&   !
   &    44., 72.,114., 30.,68., 72.,   70.,72., 70.,28.,56.,&
@@ -137,24 +137,23 @@ DATA scalp /  1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,& !
 &             1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,&
 &             1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,&
 &             1.00,1.00,1.00,1.00,1.00,  1.00/
-
        mecha="RADM2"
 	write(6,*)' >>>> Reading file -  localiza.csv ---------'
 
-	open (unit=10,file='localiza.csv',status='old',action='read')
-	read (10,*) cdum  !Header
-	read (10,*) nx,ny  !Header
-	ncel=nx*ny
-    allocate(idcg(ncel),lon(ncel),lat(ncel),pop(ncel))
-    allocate(utmx(ncel),utmy(ncel),utmz(ncel))
-    allocate(xlon(nx,ny),xlat(nx,ny),pob(nx,ny))
-    allocate(utmxd(nx,ny),utmyd(nx,ny),utmzd(nx,ny))
-    allocate(eft(nx,ny,nf,nh,8))
-    zlev=0
-    eft=0
-	do k=1,ncel
+  open (unit=10,file='localiza.csv',status='old',action='read')
+  read (10,*) cdum  !Header
+  read (10,*) nx,ny,titulo  ! Dimensions and Title
+  ncel=nx*ny
+  allocate(idcg(ncel),lon(ncel),lat(ncel),pop(ncel))
+  allocate(utmx(ncel),utmy(ncel),utmz(ncel))
+  allocate(xlon(nx,ny),xlat(nx,ny),pob(nx,ny))
+  allocate(utmxd(nx,ny),utmyd(nx,ny),utmzd(nx,ny))
+  allocate(eft(nx,ny,nf,nh,8))
+  zlev=0
+  eft=0
+  do k=1,ncel
 	read(10,*) idcg(k),lon(k),lat(k),i,pop(k),utmx(k),utmy(k),utmz(k)
-	end do
+  end do
 !
   do i=1,nx
     do j=1,ny
@@ -167,7 +166,8 @@ DATA scalp /  1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,& !
         utmzd(i,j)=utmz(k)
     end do
   end do
-!   print *,ncel,xlon(1,1),xlat(1,1)
+  CDIM=(utmx(2)-utmx(1))/1000.  ! from meters to km
+  print *,CDIM,trim(titulo)
   close(10)
 
   do ii=1,nf
@@ -265,7 +265,8 @@ DATA scalp /  1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,& !
                   eft(i,j,is,ih,levld)=eft(i,j,is,ih,levld)+edum(ih)/WTM(is)*scalp(ii)
                 end if
 			  end do
-              zlev =max(zlev,levl,levld)
+          zlev =max(zlev,levl,levld)
+          if(zlev.gt.8) Stop "*** Change dimension line  allocate(eft.."
 			  exit busca3
 			end if
 		 end do
@@ -300,7 +301,6 @@ subroutine store
     integer :: isp(radm)
     integer,dimension(NDIMS):: dim,id_dim
     real,ALLOCATABLE :: ea(:,:,:,:)
-    real :: CDIM=9.0  ! celdimension in km
     character (len=19),dimension(NDIMS) ::sdim
     character(len=39):: FILE_NAME
     character(len=19),dimension(1,1)::Times
@@ -354,7 +354,7 @@ subroutine store
       dimids4 = (/id_dim(3),id_dim(4),id_dim(6),id_dim(1)/)
       print *,"Attributos Globales NF90_GLOBAL"
       !Attributos Globales NF90_GLOBAL
-      call check( nf90_put_att(ncid, NF90_GLOBAL, "TITLE","EI 2014 emissions for Mexico Area"))
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "TITLE",titulo))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "START_DATE",iTime))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "DAY ",cday))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "SIMULATION_START_DATE",iTime))
@@ -362,9 +362,9 @@ subroutine store
       call check( nf90_put_att(ncid, NF90_GLOBAL, "SOUTH-NORTH_GRID_DIMENSION",ny))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "BOTTOM-TOP_GRID_DIMENSION",1))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "DX",CDIM*1000))
-      call check( nf90_put_att(ncid, NF90_GLOBAL, "DY",CDIM*1000))
-      call check( nf90_put_att(ncid, NF90_GLOBAL, "CEN_LAT",(MAXVAL(lat)+MINVAL(lat))/2))
-      call check( nf90_put_att(ncid, NF90_GLOBAL, "CEN_LON",(MAXVAL(lon)+MINVAL(lon))/2))
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "DY",CDIM*1000))!xlon(nx,ny),xlat(nx,ny)
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "CEN_LAT",xlat(nx/2,ny/2)))
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "CEN_LON",xlon(nx/2,ny/2)))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "TRUELAT1",17.5))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "TRUELAT2",29.5))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "MOAD_CEN_LAT",24.020222))
@@ -486,7 +486,7 @@ tiempo: do it=iit,eit
         do i=1, nx
           do j=1, ny
             do l=1,zlev
-              ea(i,j,l,1)=eft(i,j,ikk,it+1,l) /(CDIM*CDIM) !entre 3x3 km
+              ea(i,j,l,1)=eft(i,j,ikk,it+1,l) /(CDIM*CDIM) !entre 9x9 km
             end do
           end do
         end do
