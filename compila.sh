@@ -28,7 +28,7 @@ cd ../03_movilspatial/
 cd ../04_temis
    ifort -O3 -axAVX atemporal.f90 -o Atemporal.exe &
 cd ../05_semisM
-    ifort -O3 -axAVX -o MSpatial.exe movil_spatial.f90 &
+    ifort -O3 -axAVX -o MSpatial.exe movil_spatial.f90 
     ./MSpatial.exe >> ../ejecuta.log &
 cd ../06_temisM
     ifort -O3 movil_temp.f90 -o Mtemporal.exe &

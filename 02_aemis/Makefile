@@ -14,7 +14,7 @@ CD      =       cd
 LN      =       ln -s
 MAKE    =       make -i -f Makefile
 RM      =       /bin/rm -f
-RM_LIST =       *.mod *.o *.f core .tmpfile *.exe 
+RM_LIST =       *.mod *.o core .tmpfile *.exe A*_2014.csv
 INTEL_LIB =     /opt/intel/lib
 
 # Ejecuta

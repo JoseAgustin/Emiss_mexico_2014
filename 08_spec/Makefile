@@ -10,8 +10,8 @@ FIX01 =
 objec1 = agg_a.o
 objec2 = agg_m.o
 objec3 = agg_p.o
-RM_LIST =       *.mod *.o core .tmpfile *.exe
-
+RM_LIST =  *.mod *.o core .tmpfile *.exe RA*.txt SAPRC9*txt CBM05*txt
+RM	=	/bin/rm -f 
 # Ejecuta
 default:
 	uname -a > .tmpfile

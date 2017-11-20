@@ -12,7 +12,8 @@ objec2 = g_2014_racm.o
 objec3 = g_saprc_2014.o
 objec4 = g_cbm5_2014.o
 
-RM_LIST =       *.mod *.o core .tmpfile *.exe
+RM_LIST = *.mod *.o core .tmpfile *.exe wrfchemi.*
+RM	=	/bin/rm -f 
 
 # Ejecuta
 default:

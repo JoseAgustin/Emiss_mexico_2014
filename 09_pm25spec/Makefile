@@ -10,8 +10,8 @@ FIX01 =
 objec1 = pm25_speci_a.o
 objec2 = pm25_speci_m.o
 objec3 = pm25_speci_p.o
-RM_LIST =       *.mod *.o core .tmpfile *.exe
-
+RM_LIST = *.mod *.o core .tmpfile *.exe G*txt O*.txt P*txt
+RM	=	/bin/rm -f 
 # Ejecuta
 default:
 	uname -a > .tmpfile

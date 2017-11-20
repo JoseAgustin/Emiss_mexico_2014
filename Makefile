@@ -5,6 +5,8 @@
 .IGNORE:
 MAKE    =       make -i -f Makefile
 CD      =       cd
+RM	=	/bin/rm -f 
+RM_LIST =	*.log
 #	Targets for supported architectures
 
 default:
@@ -37,5 +39,6 @@ clean:
 	( $(CD) 07_puntual ; $(MAKE) clean  );\
 	( $(CD) 08_spec    ; $(MAKE) clean  );\
 	( $(CD) 09_pm25spec; $(MAKE) clean  );\
-	( $(CD) 10_storage ; $(MAKE) clean  )
+	( $(CD) 10_storage ; $(MAKE) clean  );\
+	$(RM) $(RM_LIST)
 

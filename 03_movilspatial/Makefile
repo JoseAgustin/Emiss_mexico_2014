@@ -10,8 +10,8 @@ FIX01 =
 objec1 = suma_carretera.o
 objec2 = suma_vialidades.o
 objec3 = agrega.o
-RM_LIST =       *.mod *.o core .tmpfile *.exe
-
+RM_LIST = *.mod *.o core .tmpfile *.exe salida.csv   salida2.csv  salida3.csv
+RM	=	/bin/rm -f 
 # Ejecuta
 default:
 	uname -a > .tmpfile
