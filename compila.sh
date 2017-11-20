@@ -15,7 +15,7 @@ echo $ProcessDir
 cd  02_aemis/
     ifort -o ASpatial.exe -O3 area_espacial.f90 &
     wait
-    ./ASpatial.exe >ejecuta.log &
+    ./ASpatial.exe > ../ejecuta.log &
 cd ../03_movilspatial/
     ifort -O2 -axAVX suma_carretera.f90 -o carr.exe &
     ifort -O2 -axAVX suma_vialidades.f90 -o vial.exe &
@@ -29,6 +29,7 @@ cd ../04_temis
    ifort -O3 -axAVX atemporal.f90 -o Atemporal.exe &
 cd ../05_semisM
     ifort -O3 -axAVX -o MSpatial.exe movil_spatial.f90 &
+    ./MSpatial.exe ../ejecuta.log &
 cd ../06_temisM
     ifort -O3 movil_temp.f90 -o Mtemporal.exe &
 cd ../07_puntual
