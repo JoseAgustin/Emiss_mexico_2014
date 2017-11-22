@@ -24,12 +24,12 @@ default:
 	if [ $$? = 0 ]; then echo "Compiling for Linux" ;               \
 	( $(MAKE) all                               \
 	"RM             = $(RM)"        "RM_LIST        = $(RM_LIST)"   \
-	"LN             = $(LN)"        "MACH           = DEC"          \
-	"MAKE           = $(MAKE)"      "CPP            = /lib/cpp"     \
-	"CPPFLAGS       = -I. -C -traditional"  \
-	"FC             = ifort"        "FCFLAGS        = -D$(MACH) -I. -convert big_endian -fast”\
-	"LDOPTIONS      = -convert big_endian -fast”  "CFLAGS         = -I."          \
-	"LOCAL_LIBRARIES= " ) ; \
+ 	"LN             = $(LN)"        "MACH           = DEC"          \
+	"CPPFLAGS       = -I. -C "      \
+        "FC             = ifort"        "FCFLAGS        = -O2 -axAVX  -align commons" \
+	"LDOPTIONS      = -O2 -axAVX  -align commons " \
+        "CFLAGS         = -I."          \
+        "LOCAL_LIBRARIES=  " ) ; \
 	else \
 	grep Darwin .tmpfile ; \
 	if [ $$? = 0 ]; then echo "Compiling for Darwin" ;              \

@@ -12,6 +12,8 @@ objec2 = suma_vialidades.o
 objec3 = agrega.o
 RM_LIST = *.mod *.o core .tmpfile *.exe salida.csv   salida2.csv  salida3.csv
 RM	=	/bin/rm -f 
+LN	=	ln -s
+MAKE	=	make -i -f Makefile
 # Ejecuta
 default:
 	uname -a > .tmpfile
@@ -19,12 +21,13 @@ default:
 	if [ $$? = 0 ]; then echo "Compiling for Linux" ;               \
 	( $(MAKE) all                               \
 	"RM             = $(RM)"        "RM_LIST        = $(RM_LIST)"   \
-	"LN             = $(LN)"        "MACH           = DEC"          \
-	"MAKE           = $(MAKE)"      "CPP            = /lib/cpp"     \
-	"CPPFLAGS       = -I. -C -traditional"  \
-	"FC             = ifort"        "FCFLAGS        = -D$(MACH) -I. -convert big_endian -fast”\
-	"LDOPTIONS      = -convert big_endian -fast”  "CFLAGS         = -I."          \
-	"LOCAL_LIBRARIES= " ) ; \
+        "LN             = $(LN)"        "MACH           = DEC"          \
+        "MAKE           = $(MAKE)"      "CPP            = fpp"  \
+        "CPPFLAGS       = -I. -C "      \
+        "FC             = ifort"        "FCFLAGS        = -O3 -axAVX  -align commons" \
+        "LDOPTIONS      = -O3 -axAVX  -align commons " \
+        "CFLAGS         = -I."          \
+        "LOCAL_LIBRARIES=  " ) ; \
 	else \
 	grep Darwin .tmpfile ; \
 	if [ $$? = 0 ]; then echo "Compiling for Darwin" ;              \
