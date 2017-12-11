@@ -11,20 +11,16 @@
 #         del inventario de emisiones.
 #  Modificaciones:
 #         27/07/2017 Actualizacion para IE del 2014
-#         21/11/2017 Para todo el año 2014
 #
 export ProcessDir=$PWD
 echo $ProcessDir
 #
 #  Build the fecha.txt file
-dia2=(31 28 31 30 31 30 31 31 30 31 30 31)
-  for mes in $(seq 1 1 12)
-    do
-#
-#mes=4
-dia=1
-while [ $dia -le ${dia2[${mes}-1]} ]
-#while [ $dia -le 23 ]
+
+mes=4
+dia=23
+ 
+while [ $dia -le 23 ]
 do
     echo $dia
     cd $ProcessDir/04_temis
@@ -114,9 +110,6 @@ End_Of_File
     ./racm2.exe > ../racm2.log
     (( dia++ ))
 done
-echo "Finish $mes day " ${dia2[${mes}-1]}
-done
-#
 #ncrcat -O wrfchemi.d01.radm2.2016-04-1* wrfchemi_d01_2016-04-16_00:00:00
 #mv wrfchemi_d01_2016-04-16_00:00:00 ../../DOMAIN/mecanismos/emisiones
 echo 'DONE  guarda'

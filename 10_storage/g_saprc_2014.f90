@@ -20,6 +20,7 @@
 !   Dos capas en puntuales                  18707/2017
 !   Se incluyen NO y NO2 de moviles         01/11/2017
 !   Se lee CDIM y titulo de localiza.csv    19/11/2017
+!   Se emplea namelist.saprc
 !
 module varss
     integer :: nf    ! number of files antropogenic
@@ -130,7 +131,9 @@ subroutine lee
   'T_ANNCO2.csv','T_ANNPM10.csv','T_ANNPM25.csv', &
   'GSO4_P.txt','PNO3_P.txt','OTHE_P.txt','POA_P.txt','PEC_P.txt',&
   'T_ANNCH4.csv','T_ANNCN.csv'/
-
+  NAMELIST /SCALE/ scala,scalm,scalp
+  integer unit_nml
+  logical existe
 ! Mole weight
     DATA WTM / 28.0, 30.00, 46.00, 17.00, 64.0,  16.043,&
               58.08, 58.61, 77.60,118.89, 95.16,118.72,&
@@ -148,21 +151,26 @@ subroutine lee
 !             OLE1 OLE2 PHEN PRD2 RCHO PACD
 !             TERP  CO2
 !             PM10 PM2.5 PSO4 PNO3 OTHER POA   PEC  CH4   CN
-DATA scala /  1.00,1.00,1.00,1.00,1.00,1.00, 1.00,1.00,1.00,1.00,1.00,1.00,& !
-&             1.00,1.00,1.00,1.00,1.00,1.00, 1.00,1.00,1.00,1.00,1.00,1.00,&
-&             1.00,1.00,1.00,1.00,1.00,1.00, 1.00,1.00,1.00,1.00,1.00,1.00,&
-&             1.00,1.00,&
-&             1.00,1.00,1.00,1.00,1.00,1.00, 1.00,1.00,1.00/
-DATA scalm /  1.00,1.00,1.00,1.00,1.00,1.00, 1.00,1.00,1.00,1.00,1.00,1.00,& !
-&             1.00,1.00,1.00,1.00,1.00,1.00, 1.00,1.00,1.00,1.00,1.00,1.00,&
-&             1.00,1.00,1.00,1.00,1.00,1.00, 1.00,1.00,1.00,1.00,1.00,1.00,&
-&             1.00,1.00,&
-&             1.00,1.00,1.00,1.00,1.00,1.00, 1.00,1.00,1.00/
-DATA scalp /  1.00,1.00,1.00,1.00,1.00,1.00, 1.00,1.00,1.00,1.00,1.00,1.00,& !
-&             1.00,1.00,1.00,1.00,1.00,1.00, 1.00,1.00,1.00,1.00,1.00,1.00,&
-&             1.00,1.00,1.00,1.00,1.00,1.00, 1.00,1.00,1.00,1.00,1.00,1.00,&
-&             1.00,1.00,&
-&             1.00,1.00,1.00,1.00,1.00,1.00, 1.00,1.00,1.00/
+    unit_nml = 9
+    existe = .FALSE.
+    write(6,*)' >>>> Reading file - namelist.saprc'
+    inquire ( FILE = 'namelist.saprc' , EXIST = existe )
+
+    if ( existe ) then
+    !  Opening the file.
+      open ( FILE   = 'namelist.saprc' ,      &
+      UNIT   =  unit_nml        ,      &
+      STATUS = 'OLD'            ,      &
+      FORM   = 'FORMATTED'      ,      &
+      ACTION = 'READ'           ,      &
+      ACCESS = 'SEQUENTIAL'     )
+      !  Reading the file
+      READ (unit_nml , NML = SCALE )
+      !WRITE (6    , NML = SCALE )
+    else
+      stop '***** No namelist.saprc'
+    ENDIF
+
 !
        mecha="SAPRC99"
 	write(6,*)' >>>> Reading file -  localiza.csv ---------'
