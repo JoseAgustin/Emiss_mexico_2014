@@ -322,11 +322,11 @@ subroutine store
      hoy=date(7:8)//'-'//mes(date(5:6))//'-'//date(1:4)//' '//time(1:2)//':'//time(3:4)//':'//time(5:10)
     print *,hoy
     !write(current_date(4:4),'(A1)')char(6+48)
-     do periodo=1,1!2
+     do periodo=1,2! 1 o 2
 	  if(periodo.eq.1) then
         FILE_NAME='wrfchemi.d01.'//trim(mecha)//'.'//current_date(1:19)         !******
 	   iit= 0
-	   eit= 23 !11
+	   eit= 11 !11
 	   iTime=current_date
 	  else if(periodo.eq.2) then
 	   iit=12
