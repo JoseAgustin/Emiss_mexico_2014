@@ -32,7 +32,7 @@ module varsc
     integer :: nh    !  hours in a day
     integer :: nx,ny ! grid dimensions
     integer :: ncty  ! number of point stations
-    integer :: idcf  ! ID cell in file
+    integer*8 :: idcf  ! ID cell in file
     integer :: zlev       ! Layer of emission (1 to 8) 8 lower 1 upper
     integer,parameter :: ipm=23  ! Posicion del archivo PM2.5
     integer,parameter :: icn=30    ! Posicion archivo CN del INEM
