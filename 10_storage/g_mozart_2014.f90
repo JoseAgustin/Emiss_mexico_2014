@@ -1,5 +1,5 @@
 !
-!	g_saprc_2014.f90
+!	g_mozart_2014.f90
 !	
 !
 !  Creado por Jose Agustin Garcia Reynoso el 12/07/17.
@@ -7,9 +7,9 @@
 !
 !  Proposito:
 !            Guarda los datos del inventari para el 
-!            mecanismo SAPRC99 en formato netcdf
+!            mecanismo MOZART en formato netcdf
 !
-! ifort -O2 -axAVX -lnetcdff -L$NETCDF/lib -I$NETCDF/include g_saprc_2014.f90 -o saprc.exe
+! ifort -O2 -axAVX -lnetcdff -L$NETCDF/lib -I$NETCDF/include g_mozart_2014.f90 -o mozart.exe
 !
 !
 !   Actualizacion de xlat, xlon              26/08/2012
@@ -20,7 +20,7 @@
 !   Dos capas en puntuales                  18707/2017
 !   Se incluyen NO y NO2 de moviles         01/11/2017
 !   Se lee CDIM y titulo de localiza.csv    19/11/2017
-!   Se emplea namelist.saprc
+!   Se emplea namelist.mozart
 !
 module varss
     integer :: nf    ! number of files antropogenic
@@ -33,10 +33,10 @@ module varss
     integer :: ncty  ! number of point stations
     integer*8 :: idcf  ! ID cell in file
     integer :: zlev       ! Layer of emission (1 to 8) 8 lower 1 upper
-    integer,parameter :: ipm=40  ! Posicion del archivo PM2.5
-    integer,parameter :: icn=47    ! Posicion archivo CN del INEM
-    integer,parameter :: jcn=45    ! Posicion archivo CN de especiacion
-    integer,parameter :: imt=46    ! Posicion archivo CH4 del INEM
+    integer,parameter :: ipm=32  ! Posicion del archivo PM2.5
+    integer,parameter :: icn=39    ! Posicion archivo CN del INEM
+    integer,parameter :: jcn=37    ! Posicion archivo CN de especiacion
+    integer,parameter :: imt=38    ! Posicion archivo CH4 del INEM
     integer,parameter :: jmt=6     ! Posicion archivo CH4 de especiacion
     integer,allocatable :: idcg(:) ! ID cell in grid
     integer,allocatable:: utmz(:),utmzd(:,:)  !utmz
@@ -47,24 +47,23 @@ module varss
     real,allocatable :: utmxd(:,:),utmyd(:,:)
     real :: CDIM      ! celdimension in km
 
-  parameter(nf=47,ns=45,radm=ns+5,nh=24)
+  parameter(nf=39,ns=37,radm=ns+5,nh=24)
 	
   character(len=3) :: cday
   character(len=11),dimension(radm):: ename=(/'E_CO','E_NO','E_NO2','E_NH3','E_SO2','E_CH4',&
-  'E_ACET','E_ALK3','E_ALK4','E_ALK5','E_ARO1',    'E_ARO2','E_BACL','E_BALD','E_C2H6','E_C3H8',&
-  'E_CCHO','E_CCO_OH','E_CRES','E_ETHENE','E_GLY', 'E_HCHO','E_HCOOH','E_ISOPRENE',&
-  'E_ISOPROD','E_MEK','E_MEOH','E_METHACRO','E_MGLY', 'E_MVK','E_OLE1','E_OLE2','E_PHEN','E_PROD2',&
-  'E_RCHO','E_RCO_OH','E_TERP','E_CO2','E_PM_10','E_PM25',&
+  'E_BENZENE','E_BIGALK','E_BIGENE','E_C10H16','E_C2H2','E_C2H4','E_C2H5OH','E_C2H6','E_C3H6',&
+  'E_C3H8','E_CH2O','E_CH3CHO','E_CH3COCH3','E_GLY','E_HCOOH','E_ISOP','E_MACR','E_MEK',&
+  'E_CH3OH','E_MGLY', 'E_MVK','E_TOLUENE','E_XYLENE',&
+  'E_CO2','E_PM_10','E_PM25',&
   'E_SO4I ','E_NO3I ','E_PM25I','E_ORGI ','E_ECI  ',&
   'E_SO4J ','E_NO3J ','E_PM25J','E_ORGJ ','E_ECJ  '/)
   character(len=16),dimension(radm):: cname=(/'Carbon Monoxide ','Nitrogen Oxide','Nitrogen Dioxide',&
-  'Ammonia','Sulfur Dioxide','Methane','Acetone','Alkanes 3','Alkanes 4','Alkanes 5',&
-  'Aromatics 1','Aromatics 2','Biacetyl','Aromatic aldehyd','Alkanes 1','Alkanes 2',&
-  'Acetaldehyde','Acetic Acid','Cresol','Ethene','Glyoxal','Formaldehyde','Formic Acid',&
-  'Isoprene','Lumped isoprene ','Ketones and othe','Methanol','Methacrolein','Methyl Glyoxal',&
-  'Methyl Vinyl Ket','Alkenes 1','Alkenes 2','Phenol','Ketones + other',&
-  'Lumped C3+ Aldeh','Higher Carboxyl','Terpenes ','Carbon Dioxide',&
-  'PM_10','PM_25 ','Sulfates ','Nitrates ','OTHER','Organic C','Elemental Carbon  ',&
+  'Ammonia','Sulfur Dioxide','Methane','Benzene','Lumped Alkan C>3','Lumped Alkanes','A Pinene',&
+  'Ethyne','Ethene','Ethanol','Ethane','Propene','Propane','Formaldehyde','Acetaldehyde',&
+  'Acetone','Glyoxal','Formic Acid','Isoprene','Methacrolein','Methyl Ethyl Ket',&
+  'Methanol','Methyl Glyoxal','Methyl Vinyl Ket','Toluene','Xylenes ',&
+  'Carbon Dioxide','PM_10','PM_25 ',&
+  'Sulfates ','Nitrates ','OTHER','Organic C','Elemental Carbon  ',&
   'SulfatesJ','NitratesJ','OTHER','Organic C','Elemental Carbon'/)
   character (len=19) :: current_date,current_datem,mecha
   character (len=40)  ::titulo
@@ -96,69 +95,60 @@ subroutine lee
 	character(len=13) cdum
 	character(len=18),dimension(nf):: fnameA,fnameM,fnameP
 	data fnameA /'TACO__2014.csv','TANOx_2014.csv','TANOx_2014.csv','TANH3_2014.csv','TASO2_2014.csv',&
-  'SAPRC99_CH4_A.txt','SAPRC99_ACET_A.txt','SAPRC99_ALK3_A.txt','SAPRC99_ALK4_A.txt',&
-  'SAPRC99_ALK5_A.txt','SAPRC99_ARO1_A.txt','SAPRC99_ARO2_A.txt','SAPRC99_BACL_A.txt',&
-  'SAPRC99_BALD_A.txt','SAPRC99_ALK1_A.txt','SAPRC99_ALK2_A.txt','SAPRC99_CCHO_A.txt',&
-  'SAPRC99_AACD_M.txt','SAPRC99_CRES_A.txt','SAPRC99_ETHE_A.txt','SAPRC99_GLY_A.txt' ,&
-  'SAPRC99_HCHO_A.txt','SAPRC99_FACD_A.txt','SAPRC99_ISOP_A.txt','SAPRC99_IPRD_A.txt',&
-  'SAPRC99_MEK_A.txt','SAPRC99_MEOH_A.txt','SAPRC99_MACR_A.txt','SAPRC99_MGLY_A.txt',&
-  'SAPRC99_MVK_A.txt','SAPRC99_OLE1_A.txt','SAPRC99_OLE2_A.txt','SAPRC99_PHEN_A.txt',&
-  'SAPRC99_PRD2_A.txt','SAPRC99_RCHO_A.txt','SAPRC99_PACD_A.txt','SAPRC99_TERP_A.txt',&
-  'TACO2_2014.csv'    ,'TAPM102014.csv'    ,'TAPM2_2014.csv', &
-  'GSO4_A.txt'        ,'PNO3_A.txt'        ,'OTHE_M.txt'    ,'POA_A.txt','PEC_A.txt',&
-  'TACH4_2014.csv'    ,'TACN__2014.csv'/
+    'MOZART_CH4_A.txt ','MOZART_BENZ_A.txt','MOZART_BIGA_A.txt','MOZART_BIGE_A.txt',&
+    'MOZART_C10H_A.txt','MOZART_C2H2_A.txt','MOZART_C2H4_A.txt','MOZART_C2H5_A.txt',&
+    'MOZART_C2H6_A.txt','MOZART_C3H6_A.txt','MOZART_C3H8_A.txt','MOZART_CH2O_A.txt',&
+    'MOZART_CH3C_A.txt','MOZART_CH3O_A.txt','MOZART_GLYO_A.txt','MOZART_HCOO_A.txt',&
+    'MOZART_ISOP_A.txt','MOZART_MACR_A.txt','MOZART_MEK_A.txt ','MOZART_METO_A.txt',&
+    'MOZART_MGLY_A.txt','MOZART_MVK_A.txt ','MOZART_TOLU_A.txt','MOZART_XYLE_A.txt',&
+    'TACO2_2014.csv'    ,'TAPM102014.csv'    ,'TAPM2_2014.csv', &
+    'GSO4_A.txt'        ,'PNO3_A.txt'        ,'OTHE_M.txt'    ,'POA_A.txt','PEC_A.txt',&
+    'TACH4_2014.csv'    ,'TACN__2014.csv'/
 	data fnameM /'TMCO__2014.csv','TMNO_2014.csv','TMNO2_2014.csv','TMNH3_2014.csv','TMSO2_2014.csv',&
-  'SAPRC99_CH4_M.txt','SAPRC99_ACET_M.txt','SAPRC99_ALK3_M.txt','SAPRC99_ALK4_M.txt',&
-  'SAPRC99_ALK5_M.txt','SAPRC99_ARO1_M.txt','SAPRC99_ARO2_M.txt','SAPRC99_BACL_M.txt',&
-  'SAPRC99_BALD_M.txt','SAPRC99_ALK1_M.txt','SAPRC99_ALK2_M.txt','SAPRC99_CCHO_M.txt',&
-  'SAPRC99_AACD_M.txt','SAPRC99_CRES_M.txt','SAPRC99_ETHE_M.txt','SAPRC99_GLY_M.txt' ,&
-  'SAPRC99_HCHO_M.txt','SAPRC99_FACD_M.txt','SAPRC99_ISOP_M.txt','SAPRC99_IPRD_M.txt',&
-  'SAPRC99_MEK_M.txt','SAPRC99_MEOH_M.txt','SAPRC99_MACR_M.txt','SAPRC99_MGLY_M.txt',&
-  'SAPRC99_MVK_M.txt','SAPRC99_OLE1_M.txt','SAPRC99_OLE2_M.txt','SAPRC99_PHEN_M.txt',&
-  'SAPRC99_PRD2_M.txt','SAPRC99_RCHO_M.txt','SAPRC99_PACD_M.txt','SAPRC99_TERP_M.txt',&
-  'TMCO2_2014.csv','TMPM102014.csv','TMPM2_2014.csv', &
-  'GSO4_M.txt','PNO3_M.txt','OTHE_M.txt','POA_M.txt','PEC_M.txt',&
-   'TMCH4_2014.csv','TMCN__2014.csv'/
+    'MOZART_CH4_M.txt ','MOZART_BENZ_M.txt','MOZART_BIGA_M.txt','MOZART_BIGE_M.txt',&
+    'MOZART_C10H_M.txt','MOZART_C2H2_M.txt','MOZART_C2H4_M.txt','MOZART_C2H5_M.txt',&
+    'MOZART_C2H6_M.txt','MOZART_C3H6_M.txt','MOZART_C3H8_M.txt','MOZART_CH2O_M.txt',&
+    'MOZART_CH3C_M.txt','MOZART_CH3O_M.txt','MOZART_GLYO_M.txt','MOZART_HCOO_M.txt',&
+    'MOZART_ISOP_M.txt','MOZART_MACR_M.txt','MOZART_MEK_M.txt ','MOZART_METO_M.txt',&
+    'MOZART_MGLY_M.txt','MOZART_MVK_M.txt ','MOZART_TOLU_M.txt','MOZART_XYLE_M.txt',&
+    'TMCO2_2014.csv','TMPM102014.csv','TMPM2_2014.csv', &
+    'GSO4_M.txt','PNO3_M.txt','OTHE_M.txt','POA_M.txt','PEC_M.txt',&
+    'TMCH4_2014.csv','TMCN__2014.csv'/
     data fnameP /'T_ANNCO.csv','T_ANNNOX.csv','T_ANNNOX.csv','T_ANNNH3.csv','T_ANNSO2.csv',&
-  'SAPRC99_CH4_P.txt','SAPRC99_ACET_P.txt','SAPRC99_ALK3_P.txt','SAPRC99_ALK4_P.txt',&
-  'SAPRC99_ALK5_P.txt','SAPRC99_ARO1_P.txt','SAPRC99_ARO2_P.txt','SAPRC99_BACL_P.txt',&
-  'SAPRC99_BALD_P.txt','SAPRC99_ALK1_P.txt','SAPRC99_ALK2_P.txt','SAPRC99_CCHO_P.txt',&
-  'SAPRC99_AACD_P.txt','SAPRC99_CRES_P.txt','SAPRC99_ETHE_P.txt','SAPRC99_GLY_P.txt' ,&
-  'SAPRC99_HCHO_P.txt','SAPRC99_FACD_P.txt','SAPRC99_ISOP_P.txt','SAPRC99_IPRD_P.txt',&
-  'SAPRC99_MEK_P.txt','SAPRC99_MEOH_P.txt','SAPRC99_MACR_P.txt','SAPRC99_MGLY_P.txt',&
-  'SAPRC99_MVK_P.txt','SAPRC99_OLE1_P.txt','SAPRC99_OLE2_P.txt','SAPRC99_PHEN_P.txt',&
-  'SAPRC99_PRD2_P.txt','SAPRC99_RCHO_P.txt','SAPRC99_PACD_P.txt','SAPRC99_TERP_P.txt',&
-  'T_ANNCO2.csv','T_ANNPM10.csv','T_ANNPM25.csv', &
-  'GSO4_P.txt','PNO3_P.txt','OTHE_P.txt','POA_P.txt','PEC_P.txt',&
-  'T_ANNCH4.csv','T_ANNCN.csv'/
+    'MOZART_CH4_P.txt ','MOZART_BENZ_P.txt','MOZART_BIGA_P.txt','MOZART_BIGE_P.txt',&
+    'MOZART_C10H_P.txt','MOZART_C2H2_P.txt','MOZART_C2H4_P.txt','MOZART_C2H5_P.txt',&
+    'MOZART_C2H6_P.txt','MOZART_C3H6_P.txt','MOZART_C3H8_P.txt','MOZART_CH2O_P.txt',&
+    'MOZART_CH3C_P.txt','MOZART_CH3O_P.txt','MOZART_GLYO_P.txt','MOZART_HCOO_P.txt',&
+    'MOZART_ISOP_P.txt','MOZART_MACR_P.txt','MOZART_MEK_P.txt ','MOZART_METO_P.txt',&
+    'MOZART_MGLY_P.txt','MOZART_MVK_P.txt ','MOZART_TOLU_P.txt','MOZART_XYLE_P.txt',&
+    'T_ANNCO2.csv','T_ANNPM10.csv','T_ANNPM25.csv', &
+    'GSO4_P.txt','PNO3_P.txt','OTHE_P.txt','POA_P.txt','PEC_P.txt',&
+    'T_ANNCH4.csv','T_ANNCN.csv'/
   NAMELIST /SCALE/ scala,scalm,scalp
   integer unit_nml
   logical existe
 ! Mole weight
     DATA WTM / 28.0, 30.00, 46.00, 17.00, 64.0,  16.043,&
-              58.08, 58.61, 77.60,118.89, 95.16,118.72,&
-              86.09,106.13, 30.07, 36.73, 44.05, 60.05,&
-             108.14, 28.05, 58.04, 30.03, 46.03, 68.12,& !
-             100.12, 72.11, 32.04, 70.09, 72.07, 70.09,&
-              72.34, 75.78, 94.11,116.16, 58.08, 74.08,&
-             136.238,44.,&
-              7*3600./! MW 3600 for unit conversion to ug/s
+              78.00, 72.00, 56.00,136.00,26.00, 28.00,&
+              46.00,30.00, 42.00, 44.00, 30.00, 44.00,&
+             56.00, 58.00, 46.00, 68.00, 70.00, 72.00,& !
+             32.00, 72.00, 70.00, 92.00, 106.00,&
+             44., 7*3600./! MW 3600 for unit conversion to ug/s
 !    SCALA      CO   NO  NO2  NH3  SO2  CH4
-!             ACET ALK3 ALK4 ALK5 ARO1 ARO2
-!             BALC BALD ALK1 ALK2 CCHO AACD
-!             CRES ETHE  GLY HCHO FACD ISOP
-!             IPRD  MEK MEOH MACR MGLY  MVK
-!             OLE1 OLE2 PHEN PRD2 RCHO PACD
-!             TERP  CO2
+!             BENZ   BIGA BIGE C10H16 C2H2 C2H4
+!             C2H5OH C2H6 C3H6 C3H8 CH2O CH3C CH3COCH3
+!             GLY HCOO ISOP  MACR MEK  METOH
+!             MGLY MVK TOLU XYLE
+!             CO2
 !             PM10 PM2.5 PSO4 PNO3 OTHER POA   PEC  CH4   CN
     unit_nml = 9
     existe = .FALSE.
-    write(6,*)' >>>> Reading file - namelist.saprc'
-    inquire ( FILE = 'namelist.saprc' , EXIST = existe )
+    write(6,*)' >>>> Reading file - namelist.mozart'
+    inquire ( FILE = 'namelist.mozart' , EXIST = existe )
 
     if ( existe ) then
     !  Opening the file.
-      open ( FILE   = 'namelist.saprc' ,      &
+      open ( FILE   = 'namelist.mozart' ,      &
       UNIT   =  unit_nml        ,      &
       STATUS = 'OLD'            ,      &
       FORM   = 'FORMATTED'      ,      &
@@ -168,11 +158,11 @@ subroutine lee
       READ (unit_nml , NML = SCALE )
       !WRITE (6    , NML = SCALE )
     else
-      stop '***** No namelist.saprc'
+      stop '***** No namelist.mozart'
     ENDIF
 
 !
-       mecha="SAPRC99"
+       mecha="MOZART"
 	write(6,*)' >>>> Reading file -  localiza.csv ---------'
 
 	open (unit=10,file='localiza.csv',status='old',action='read')
@@ -347,7 +337,7 @@ subroutine store
                  11,12,13,14,15, 16,17,18,19,20, &
                  21,22,23,24,25, 26,27,28,29,30, &
                  31,32,33,34,35, 36,37,38,39,40, &
-                 41,42,43,44,45, 46,47,48,49,50/
+                 41,42/
 
     data sdim /"Time               ","DateStrLen         ","west_east          ",&
 	&          "south_north        ","bottom_top         ","emissions_zdim_stag"/	
