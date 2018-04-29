@@ -22,7 +22,7 @@
 !   Se lee CDIM y titulo de localiza.csv    19/11/2017
 !   Se emplea namelist.mozart
 !
-module varss
+module varsm
     integer :: nf    ! number of files antropogenic
     integer :: ns    ! number of compounds
     integer ::ncel   ! number of cell in the grid
@@ -70,10 +70,10 @@ module varss
     common /domain/ ncel,nl,nx,ny,zlev
     common /date/ current_date,cday,mecha,cname,titulo
 
-end module varss
+end module varsm
 
 program guarda_nc
-use varss
+use varsm
 use netcdf
 
 	call lee
