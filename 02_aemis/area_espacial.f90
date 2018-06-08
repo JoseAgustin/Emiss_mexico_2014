@@ -306,7 +306,7 @@ subroutine calculos
         invcc: do i=1,nm          ! municipality
         if(idu(j).eq.iem(k,i)) then
             do l=1,nscc(k)
-                if(scc(k,l).eq.'2202410080') ecen(j,k,l)=emiss(i,l,k)*fu(j)*1e6 !Terminal Buses
+                if(scc(k,l).eq.'2230070310') ecen(j,k,l)=emiss(i,l,k)*fu(j)*1e6 !Terminal Buses
                 if(scc(k,l).eq.'2270008010') ecen(j,k,l)=emiss(i,l,k)*fu(j)*1e6 !Terminales de autobuses
             end do
             exit invcc
