@@ -271,14 +271,22 @@ subroutine lee
 		  do i=1,nx
 			k=k+1
 			if(idcg(k).eq.idcf) then
-			  do ih=1,nh
+		  do ih=1,nh
                 ! Emission from g to gmol by 1/WTM
                 if(ih.gt.9 .and. ih.lt.19) then
-                  eft(i,j,is,ih,levl)=eft(i,j,is,ih,levl)+edum(ih)/WTM(is)*scalp(ii)
-                else
-                  eft(i,j,is,ih,levld)=eft(i,j,is,ih,levld)+edum(ih)/WTM(is)*scalp(ii)
-                end if
-			  end do
+                  if(levl.lt.2) then
+                    eft(i,j,is,ih,levl)=eft(i,j,is,ih,levl)+edum(ih)/WTM(is)*scalp(ii)
+                   else
+                    eft(i,j,is,ih,levl)=eft(i,j,is,ih,levl)+edum(ih)/WTM(is)
+                  end if
+                 else
+                  if(levld.lt.2) then
+                    eft(i,j,is,ih,levld)=eft(i,j,is,ih,levld)+edum(ih)/WTM(is)*scalp(ii)
+                  else
+                    eft(i,j,is,ih,levld)=eft(i,j,is,ih,levld)+edum(ih)/WTM(is)
+                  end if
+                 end if
+	        end do
           zlev =max(zlev,levl,levld)
           if(zlev.gt.8) Stop "*** Change dimension line  allocate(eft.."
 			  exit busca3

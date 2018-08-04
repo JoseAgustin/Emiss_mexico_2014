@@ -22,6 +22,8 @@
 !   Dos capas en puntuales                  18707/2017
 !   Se incluyen NO y NO2 de moviles         01/11/2017
 !   Se lee CDIM y titulo de localiza.csv    19/11/2017
+!   Se emplea namelist.cmaq                 04/08/2018
+!   Scala puntual solo capa 1               04/08/2018
 !
 module varsc
     integer :: nf    ! number of files antropogenic
@@ -116,6 +118,9 @@ subroutine lee
     & 'T_ANNCO2.csv','T_ANNPM10.csv','T_ANNPM25.csv', &
 	& 'GSO4_P.txt','PNO3_P.txt','OTHE_P.txt','POA_P.txt','PEC_P.txt',&
     & 'T_ANNCH4.csv','T_ANNCN.csv'/
+    NAMELIST /SCALE/ scala,scalm,scalp
+    integer unit_nml
+    logical existe
 ! Mole weight
        DATA WTM /28., 17., 30., 46., 64.,32.,  16., 32., 32.,32.,32.,&   !
 	   &         64., 16., 16., 80., 32.,16., 160.,112.,128., 44.,&
@@ -124,17 +129,25 @@ subroutine lee
 !    SCALA      CO   NH3  NO   NO2  SO2 ALD2   CH4  ALDx  ETH ETHA ETOH
 !             IOLE  MEOH HCHO ISOP  OLE  PAR   TERP  TOL  XYL  CO2
 !             PM10 PM2.5 PSO4 PNO3 OTHER POA   PEC  CH4   CN
-DATA scala /  1.00,1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,& !
-&             1.00,1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,&
-&             1.00,1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00/
+    unit_nml = 9
+    existe = .FALSE.
+    write(6,*)' >>>> Reading file - namelist.cbm05'
+    inquire ( FILE = 'namelist.cbm05' , EXIST = existe )
 
-DATA scalm /  1.00,1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,& !
-&             1.00,1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,10.0,&
-&             1.00,1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00/
-
-DATA scalp /  1.00,1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,& !
-&             1.00,1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,0.00,&
-&             1.00,1.00,1.00,1.00,1.00,1.00,  1.00,0.00,0.00/
+    if ( existe ) then
+    !  Opening the file.
+      open ( FILE   = 'namelist.cbm05' ,      &
+      UNIT   =  unit_nml        ,      &
+      STATUS = 'OLD'            ,      &
+      FORM   = 'FORMATTED'      ,      &
+      ACTION = 'READ'           ,      &
+      ACCESS = 'SEQUENTIAL'     )
+      !  Reading the file
+      READ (unit_nml , NML = SCALE )
+      !WRITE (6    , NML = SCALE )
+    else
+      stop '***** No namelist.cbm05'
+    ENDIF
 
        mecha="CMB05"
 	write(6,*)' >>>> Reading file -  localiza.csv ---------'
@@ -259,10 +272,18 @@ DATA scalp /  1.00,1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,& !
 			  do ih=1,nh
                 ! Emission from g to gmol by 1/WTM
             if(ih.gt.9 .and. ih.lt.19) then
-              eft(i,j,is,ih,levl)=eft(i,j,is,ih,levl)+edum(ih)/WTM(is)*scalp(ii)
-            else
-              eft(i,j,is,ih,levld)=eft(i,j,is,ih,levld)+edum(ih)/WTM(is)*scalp(ii)
-            end if
+                  if(levl.lt.2) then
+                    eft(i,j,is,ih,levl)=eft(i,j,is,ih,levl)+edum(ih)/WTM(is)*scalp(ii)
+                  else
+                    eft(i,j,is,ih,levl)=eft(i,j,is,ih,levl)+edum(ih)/WTM(is)
+                  end if
+                else
+                  if(levld.lt.2) then
+                    eft(i,j,is,ih,levld)=eft(i,j,is,ih,levld)+edum(ih)/WTM(is)*scalp(ii)
+                  else
+                    eft(i,j,is,ih,levld)=eft(i,j,is,ih,levld)+edum(ih)/WTM(is)
+                  end if
+                end if
 			  end do
           zlev =max(zlev,levl,levld)
           if(zlev.gt.8) Stop "*** Change dimension line allocate(eft.."

@@ -20,6 +20,7 @@
 !   Dos capas en puntuales                  18707/2017
 !   Se lee CDIM y titulo de localiza.csv    19/11/2017
 !   Se calcula el dia juliano                3/08/2018
+!   Se adecua solo capa 1 de puntuales       4/08/2018
 !
 module varsr
     integer :: nf    ! number of files antropogenic
@@ -291,10 +292,18 @@ DATA scalp /  1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,& !
 			  do ih=1,nh
                 ! Emission from g to gmol by 1/WTM
             if(ih.gt.9 .and. ih.lt.19) then
-              eft(i,j,is,ih,levl)=eft(i,j,is,ih,levl)+edum(ih)/WTM(is)*scalp(ii)
-            else
-              eft(i,j,is,ih,levld)=eft(i,j,is,ih,levld)+edum(ih)/WTM(is)*scalp(ii)
-            end if
+                  if(levl.lt.2) then
+                    eft(i,j,is,ih,levl)=eft(i,j,is,ih,levl)+edum(ih)/WTM(is)*scalp(ii)
+                  else
+                    eft(i,j,is,ih,levl)=eft(i,j,is,ih,levl)+edum(ih)/WTM(is)
+                  end if
+                else
+                  if(levld.lt.2) then
+                    eft(i,j,is,ih,levld)=eft(i,j,is,ih,levld)+edum(ih)/WTM(is)*scalp(ii)
+                  else
+                    eft(i,j,is,ih,levld)=eft(i,j,is,ih,levld)+edum(ih)/WTM(is)
+                  end if
+                end if
           end do
           zlev =max(zlev,levl,levld)
           if(zlev.gt.8) Stop "*** Change dimension line  allocate(eft.."
