@@ -23,7 +23,8 @@
 !   Se incluyen NO y NO2 de moviles         01/11/2017
 !   Se lee CDIM y titulo de localiza.csv    19/11/2017
 !   Salidas preparadas para CMAQ            04/08/2018
-!   Se emplea namelist.saprc                04/08/2018
+!   Se emplea namelist.cmaq                 04/08/2018
+!   Cambio en scalp solo capa 1             04/08/2018
 !
 module varsc
     integer ::ncel   ! number of cell in the grid
