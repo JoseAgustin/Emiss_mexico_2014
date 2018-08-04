@@ -6,8 +6,8 @@
 !
 !
 !  Proposito:
-!            Guarda los datos del inventari para el 
-!            mecanismo RADM2 en formato netcdf
+!            Guarda los datos del inventario para el
+!            mecanismo RADM2 en formato netcdf y con NAMELIST
 !
 ! ifort -O2 -axAVX -lnetcdff -L$NETCDF/lib -I$NETCDF/include g_radm_2014.f90 -o radm2.exe
 !
@@ -19,7 +19,9 @@
 !   Para año 2014                           12/07/2017
 !   Dos capas en puntuales                  18/07/2017
 !   Se incluyen NO y NO2 de moviles         01/11/2017
+!   Se incluye NAMELIST                     08/11/2017
 !   Se lee CDIM y titulo de localiza.csv    19/11/2017
+!   Se calcula el dia juliano                3/08/2018
 !
 module vars
     integer :: nf    ! number of files antropogenic
@@ -116,6 +118,9 @@ subroutine lee
     & 'RADM-2_XYL_P.txt','T_ANNCO2.csv','T_ANNPM10.csv','T_ANNPM25.csv', &
     & 'GSO4_P.txt','PNO3_P.txt','OTHE_P.txt','POA_P.txt','PEC_P.txt',&
     & 'T_ANNCH4.csv','T_ANNCN.csv'/
+    NAMELIST /SCALE/ scala,scalm,scalp
+    integer unit_nml
+    logical existe
 ! Mole weight
   DATA WTM /28., 17., 30, 46., 64.,   44.,16.,108.,30.,58.,&   !
   &    44., 72.,114., 30.,68., 72.,   70.,72., 70.,28.,56.,&
@@ -125,18 +130,26 @@ subroutine lee
 !        HC3   HC5   HC8 HCHO ISOP  KET   MACR MGLY MVK OL2 OLI
 !        OLT   ORA1  ORA2  TOL  XYL  CO2
 !       PM10  PM2.5  PSO4 PNO3 OTHER POA   PEC  CH4   CN
-DATA scala /  1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,& !
-&             1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,&
-&             1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,&
-&             1.00,1.00,1.00,1.00,1.00,  1.00/
-DATA scalm /  1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,& !
-&             1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,&
-&             1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,&
-&             1.00,1.00,1.00,1.00,1.00,  1.00/
-DATA scalp /  1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,& !
-&             1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,&
-&             1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,&
-&             1.00,1.00,1.00,1.00,1.00,  1.00/
+    unit_nml = 9
+    existe = .FALSE.
+    write(6,*)' >>>> Reading file - namelist.radm'
+    inquire ( FILE = 'namelist.radm' , EXIST = existe )
+
+    if ( existe ) then
+      !  Opening the file.
+      open ( FILE   = 'namelist.radm' ,      &
+      UNIT   =  unit_nml        ,      &
+      STATUS = 'OLD'            ,      &
+      FORM   = 'FORMATTED'      ,      &
+      ACTION = 'READ'           ,      &
+      ACCESS = 'SEQUENTIAL'     )
+      !  Reading the file
+      READ (unit_nml , NML = SCALE )
+      !WRITE (6    , NML = SCALE )
+    else
+      stop '***** No namelist.radm'
+    ENDIF
+
        mecha="RADM2"
 	write(6,*)' >>>> Reading file -  localiza.csv ---------'
 
@@ -297,7 +310,7 @@ subroutine store
     integer,dimension(radm+1):: id_var
     integer :: id_varlong,id_varlat,id_varpop
     integer :: id_utmx,id_utmy,id_utmz
-    integer :: id,iu
+    integer :: id,iu,JULDAY
     integer :: isp(radm)
     integer,dimension(NDIMS):: dim,id_dim
     real,ALLOCATABLE :: ea(:,:,:,:)
@@ -322,6 +335,7 @@ subroutine store
      hoy=date(7:8)//'-'//mes(date(5:6))//'-'//date(1:4)//' '//time(1:2)//':'//time(3:4)//':'//time(5:10)
     print *,hoy
     !write(current_date(4:4),'(A1)')char(6+48)
+    JULDAY=juliano(current_date(1:4),current_date(6:7),current_date(9:10))
      do periodo=1,2!1
 	  if(periodo.eq.1) then
         FILE_NAME='wrfchemi.d01.'//trim(mecha)//'.'//current_date(1:19)         !******
@@ -362,7 +376,7 @@ subroutine store
       call check( nf90_put_att(ncid, NF90_GLOBAL, "SOUTH-NORTH_GRID_DIMENSION",ny))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "BOTTOM-TOP_GRID_DIMENSION",1))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "DX",CDIM*1000))
-      call check( nf90_put_att(ncid, NF90_GLOBAL, "DY",CDIM*1000))!xlon(nx,ny),xlat(nx,ny)
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "DY",CDIM*1000))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "CEN_LAT",xlat(nx/2,ny/2)))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "CEN_LON",xlon(nx/2,ny/2)))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "TRUELAT1",17.5))
@@ -373,8 +387,8 @@ subroutine store
       call check( nf90_put_att(ncid, NF90_GLOBAL, "POLE_LON",0.))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "GRIDTYPE","C"))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "GMT",12.))
-      call check( nf90_put_att(ncid, NF90_GLOBAL, "JULYR",2014))
-      call check( nf90_put_att(ncid, NF90_GLOBAL, "JULDAY",40))
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "JULYR",intc(current_date(1:4))))
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "JULDAY",JULDAY))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "MAP_PROJ",1))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "MMINLU","USGS"))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "MECHANISM",mecha))
@@ -602,4 +616,44 @@ end subroutine check
 
           end function
 !
+integer function juliano(year,mes,day)
+  character*4,intent(in) :: year
+  character*2,intent(in) :: mes
+  character*2,intent(in) :: day
+  integer,dimension(12)::month=[31,28,31,30,31,30,31,31,30,31,30,31]
+  integer i
+  iyear=intc(year)
+  imes=intc(mes)
+  iday=intc(day)
+  if (mod(iyear,4)==0.and.mod(iyear,100)/=0) month(2)=29
+  if (imes==1) then
+    juliano=iday
+    else
+    juliano=0
+    do i=1,imes-1
+      juliano=juliano+month(i)
+    end do
+    juliano=juliano+iday
+  end if
+  return
+end function
+
+! i  n         t     ccccc
+!    nnnnn   ttttt  c
+! i  n    n    t    c
+! i  n    n    t    c
+! i  n    n    t     ccccc
+integer function intc(char)
+  character(len=*),intent(in):: char
+  integer :: i,l
+  l=len(char)
+  intc=0
+  do i=1,l
+    if(ichar(char(i:i)).lt.48 .or. ichar(char(i:i)).gt.57) then
+      print *,"Character not a number function INTC() ",char
+      stop
+    end if
+    intc=(ichar(char(i:i))-48)*10**(l-i)+intc
+  end do
+end function
 end program guarda_nc
