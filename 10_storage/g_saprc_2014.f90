@@ -171,7 +171,6 @@ subroutine lee
     else
       stop '***** No namelist.saprc'
     ENDIF
-
 !
        mecha="SAPRC99"
 	write(6,*)' >>>> Reading file -  localiza.csv ---------'

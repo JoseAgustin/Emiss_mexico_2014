@@ -23,6 +23,7 @@
 !   Se incluyen NO y NO2 de moviles         01/11/2017
 !   Se lee CDIM y titulo de localiza.csv    19/11/2017
 !   Salidas preparadas para CMAQ            04/08/2018
+!   Se emplea namelist.saprc                04/08/2018
 !
 module varsc
     integer ::ncel   ! number of cell in the grid
@@ -115,6 +116,9 @@ subroutine lee
     & 'T_ANNCO2.csv','T_ANNPM10.csv','T_ANNPM25.csv', &
 	& 'GSO4_P.txt','PNO3_P.txt','OTHE_P.txt','POA_P.txt','PEC_P.txt',&
     & 'T_ANNCH4.csv','T_ANNCN.csv'/
+  NAMELIST /SCALE/ scala,scalm,scalp
+  integer unit_nml
+  logical existe
 ! Mole weight
        DATA WTM /28., 17., 30., 46., 64.,32.,  16., 32., 32.,32.,32.,&   !
 	   &         64., 16., 16., 80., 32.,16., 160.,112.,128., 44.,&
@@ -123,18 +127,26 @@ subroutine lee
 !    SCALA      CO   NH3  NO   NO2  SO2 ALD2   CH4  ALDx  ETH ETHA ETOH
 !             IOLE  MEOH HCHO ISOP  OLE  PAR   TERP  TOL  XYL  CO2
 !             PM10 PM2.5 PSO4 PNO3 OTHER POA   PEC  CH4   CN
-DATA scala /  1.00,1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,& !
-&             1.00,1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,&
-&             1.00,1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00/
 
-DATA scalm /  1.00,1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,& !
-&             1.00,1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,10.0,&
-&             1.00,1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00/
+    unit_nml = 9
+    existe = .FALSE.
+    write(6,*)' >>>> Reading file - namelist.cbm05'
+    inquire ( FILE = 'namelist.cbm05' , EXIST = existe )
 
-DATA scalp /  1.00,1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,& !
-&             1.00,1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,0.00,&
-&             1.00,1.00,1.00,1.00,1.00,1.00,  1.00,0.00,0.00/
-
+    if ( existe ) then
+      !  Opening the file.
+      open ( FILE   = 'namelist.cbm05' ,      &
+      UNIT   =  unit_nml        ,      &
+      STATUS = 'OLD'            ,      &
+      FORM   = 'FORMATTED'      ,      &
+      ACTION = 'READ'           ,      &
+      ACCESS = 'SEQUENTIAL'     )
+      !  Reading the file
+      READ (unit_nml , NML = SCALE )
+      !WRITE (6    , NML = SCALE )
+    else
+      stop '***** No namelist.cbm05'
+    ENDIF
        mecha="CMB05"
 	write(6,*)' >>>> Reading file -  localiza.csv ---------'
 
@@ -258,9 +270,17 @@ DATA scalp /  1.00,1.00,1.00,1.00,1.00,1.00,  1.00,1.00,1.00,1.00,1.00,& !
 			  do ih=1,nh
                 ! Emission from g to gmol by 1/WTM
                 if(ih.gt.9 .and. ih.lt.19) then
-                  eft(i,j,is,ih,levl)=eft(i,j,is,ih,levl)+edum(ih)/WTM(is)*scalp(ii)
+                  if(levl.lt.2) then
+                    eft(i,j,is,ih,levl)=eft(i,j,is,ih,levl)+edum(ih)/WTM(is)*scalp(ii)
+                  else
+                    eft(i,j,is,ih,levl)=eft(i,j,is,ih,levl)+edum(ih)/WTM(is)
+                  end if
                 else
-                  eft(i,j,is,ih,levld)=eft(i,j,is,ih,levld)+edum(ih)/WTM(is)*scalp(ii)
+                  if(levld.lt.2) then
+                    eft(i,j,is,ih,levld)=eft(i,j,is,ih,levld)+edum(ih)/WTM(is)*scalp(ii)
+                  else
+                    eft(i,j,is,ih,levld)=eft(i,j,is,ih,levld)+edum(ih)/WTM(is)
+                  end if
                 end if
 			  end do
           zlev =max(zlev,levl,levld)
@@ -388,7 +408,7 @@ call check( nf90_put_att(ncid, NF90_GLOBAL, "IOAPI_VERSION","$Id: @(#) ioapi lib
       call check( nf90_put_att(ncid, NF90_GLOBAL, "VGLVLS ","0,0"))!
       call check( nf90_put_att(ncid, NF90_GLOBAL, "GDNAM ","MEXICO_9"))!
       call check( nf90_put_att(ncid, NF90_GLOBAL, "UPNAM ","CREATESET"))!
-call check( nf90_put_att(ncid, NF90_GLOBAL, "VAR-LIST ","CO              NH3            NO              NO2             SO2             ALD2            CH4             ALDX            ETH             ETHA            ETOH            IOLE                 MEOH            FORM            ISOP            OLE             PAR             TERP            TOL             XYL             CO2             PM_10           PMFP            PSO4            PNO3            PM25I           POA             PEC             "))
+call check( nf90_put_att(ncid, NF90_GLOBAL, "VAR-LIST ","CO              NH3            NO              NO2             SO2             ALD2            CH4             ALDX            ETH             ETHA            ETOH            IOLE                 MEOH            FORM            ISOP            OLE             PAR             TERP            TOL             XYL             CO2             PM_10           PMFP            PSO4            PNO3            PM25I           POA             PEC                          "))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "MECHANISM",mecha))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "CREATION_DATE",hoy))
 
@@ -471,12 +491,12 @@ tiempo: do it=iit,eit
         TFLAG(1,1,1)=intc(current_date(1:4))*1000+julday
         TFLAG(2,1,1)=it*10000 !HHMMSS
 			  if (periodo.eq. 1) then
-            call check( nf90_put_var(ncid,id_var(radm+1),TFLAG,start=(/1,it+1/)) )
+            call check( nf90_put_var(ncid,id_var(radm+1),TFLAG,start=(/1,ikk,it+1/)) )
 !            call check( nf90_put_var(ncid, id_varlong,xlon,start=(/1,1,it+1/)) )
 !            call check( nf90_put_var(ncid, id_varlat,xlat,start=(/1,1,it+1/)) )
 !            call check( nf90_put_var(ncid, id_varpop,pob,  start=(/1,1,it+1/)) )
 			  else
-            call check( nf90_put_var(ncid,id_var(radm+1),TFLAG,start=(/1,it-11/)) )
+            call check( nf90_put_var(ncid,id_var(radm+1),TFLAG,start=(/1,ikk,it-11/)) )
  !           call check( nf90_put_var(ncid, id_varlong,xlon,start=(/1,1,it-11/)) )
  !           call check( nf90_put_var(ncid, id_varlat,xlat,start=(/1,1,it-11/)) )
  !           call check( nf90_put_var(ncid, id_varpop,pob,start=(/1,1,it-11/)) )
