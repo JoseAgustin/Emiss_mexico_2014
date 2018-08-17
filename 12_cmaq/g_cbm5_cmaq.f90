@@ -23,8 +23,7 @@
 !   Se incluyen NO y NO2 de moviles         01/11/2017
 !   Se lee CDIM y titulo de localiza.csv    19/11/2017
 !   Salidas preparadas para CMAQ            04/08/2018
-!   Se emplea namelist.cmaq                 04/08/2018
-!   Cambio en scalp solo capa 1             04/08/2018
+!   Se emplea namelist.saprc                04/08/2018
 !
 module varsc
     integer ::ncel   ! number of cell in the grid
@@ -57,7 +56,7 @@ module varsc
     'ETOH ','IOLE ','MEOH ','FORM ','ISOP ','OLE  ','PAR  ', &
     'TERP ','TOL  ','XYL  ','CO2  ', &
     'PM_10','PMFP ','PSO4 ','PNO3 ','PM25I',&
-    'POA  ','PEC  '/)
+    'APOCI','PEC  '/)
     character(len=16),dimension(radm):: cname=(/'Carbon Monoxide ','NH3             ','NO              ', &
     'NO2  ','SO2  ','Acetaldehyde','METHANE','C3+Aldehydes','Ethene','Ethane', &
     'Ethanol','Internal OLE  ','Methanol','HCHO ','Isoprene','TOB (R-C=C)','Paraffin (C-C)', &
