@@ -483,17 +483,10 @@ tiempo: do it=iit,eit
 			  end if 
 
   	      Times(1,1)=current_date(1:19)
-			  !if (periodo.eq. 1) then
               call check( nf90_put_var(ncid,id_var(radm+1),Times,start=(/1,1/)) )
               call check( nf90_put_var(ncid, id_varlong,xlon,start=(/1,1,1/)) )
               call check( nf90_put_var(ncid, id_varlat,xlat,start=(/1,1,1/)) )
               call check( nf90_put_var(ncid, id_varpop,pob,  start=(/1,1,1/)) )
-			  !else
-            !  call check( nf90_put_var(ncid,id_var(radm+1),Times,start=(/1,it-11/)) )
-             ! call check( nf90_put_var(ncid, id_varlong,xlon,start=(/1,1,it-11/)) )
-             ! call check( nf90_put_var(ncid, id_varlat,xlat,start=(/1,1,it-11/)) )
-             ! call check( nf90_put_var(ncid, id_varpop,pob,start=(/1,1,it-11/)) )
-			 ! endif
             end if   ! for kk == 1
           do i=1, nx
             do j=1, ny
@@ -502,11 +495,7 @@ tiempo: do it=iit,eit
               end do
             end do
           end do
-            !if(periodo.eq.1) then
                 call check( nf90_put_var(ncid, id_var(isp(ikk)),ea,start=(/1,1,1,1/)) )
-            !else
-             !   call check( nf90_put_var(ncid, id_var(isp(ikk)),ea,start=(/1,1,1,it-11/)) )        !******
-            !endif
 		 end do gases
         aerosol: do ikk=ipm-1,ns ! from PM10
 			ea=0.0
@@ -518,13 +507,8 @@ tiempo: do it=iit,eit
           end do
         end do
 !
-        !if(periodo.eq.1) then
           call check( nf90_put_var(ncid, id_var(isp(ikk)),ea*0.8,start=(/1,1,1,1/)) )
           call check( nf90_put_var(ncid, id_var(isp(ikk+5)),ea*0.2,start=(/1,1,1,1/)) )
-        !else
-          !call check( nf90_put_var(ncid, id_var(isp(ikk)),ea*0.8,start=(/1,1,1,it-11/)) )        !******
-          !call check( nf90_put_var(ncid, id_var(isp(ikk+5)),ea*0.2,start=(/1,1,1,it-11/)) )        !******
-        !endif
 		 end do aerosol
 		end do tiempo
         call check( nf90_close(ncid) )
@@ -628,6 +612,13 @@ end subroutine check
           return
 
           end function
+!
+!    _       _ _                   
+!   (_)_   _| (_) __ _ _ __   ___  
+!   | | | | | | |/ _` | '_ \ / _ \ 
+!   | | |_| | | | (_| | | | | (_) |
+!  _/ |\__,_|_|_|\__,_|_| |_|\___/ 
+! |__/                             
 !
 integer function juliano(year,mes,day)
   character*4,intent(in) :: year
