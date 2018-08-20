@@ -346,22 +346,18 @@ subroutine store
     print *,hoy
     !write(current_date(4:4),'(A1)')char(6+48)
     JULDAY=juliano(current_date(1:4),current_date(6:7),current_date(9:10))
-    iit= -1
-    eit= -1
-     do periodo=1,24
-	  if(periodo.lt.11) then
-        iTime=current_date
-        iit= iit+1
-        eit= eit+1
+     do periodo=0,23
+      iit= periodo
+      eit= periodo
+      iTime=current_date
+	  if(periodo.le. 9) then
         write(iTime(13:13),'(I1)') iit
-        FILE_NAME='wrfchemi.d01.'//trim(mecha)//'.'//current_date(1:19)         !******
+        FILE_NAME='wrfchemi.d01.'//trim(mecha)//'.'//iTime          !******
 	  else
-	   iit=eit+1
-	   eit=eit+1
        write(iTime(12:13),'(I2)') iit
         FILE_NAME='wrfchemi.d01.'//trim(mecha)//'.'//iTime
 	  end if
-	  ! Open NETCDF emissions file	
+	  ! Open NETCDF emissions file
        call check( nf90_create(FILE_NAME, nf90_clobber, ncid) )
 !     Define dimensiones
 		  dim(1)=1
@@ -379,7 +375,7 @@ subroutine store
       dimids2 = (/id_dim(2),id_dim(1)/)
       dimids3 = (/id_dim(3),id_dim(2),id_dim(1) /)
       dimids4 = (/id_dim(3),id_dim(4),id_dim(6),id_dim(1)/)
-      print *,"Attributos Globales NF90_GLOBAL"
+     ! print *,"Attributos Globales NF90_GLOBAL"
       !Attributos Globales NF90_GLOBAL
       call check( nf90_put_att(ncid, NF90_GLOBAL, "TITLE",titulo))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "START_DATE",iTime))
@@ -407,7 +403,7 @@ subroutine store
       call check( nf90_put_att(ncid, NF90_GLOBAL, "MECHANISM",mecha))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "CREATION_DATE",hoy))
 
-	print *,"Define las variables"
+	!print *,"Define las variables"
 !  Define las variables
 	call check( nf90_def_var(ncid, "Times", NF90_CHAR, dimids2,id_var(radm+1) ) )
 !  Attributos para cada variable 
@@ -470,7 +466,7 @@ subroutine store
 !
 !    Inicia loop de tiempo
 tiempo: do it=iit,eit
-		write(6,'(A,x,I3)')'TIEMPO: ', it
+       write(6,'(A,x,I3,x,A19)')'TIEMPO: ', it,current_date
         gases: do ikk=1,ipm-2!for gases
 			ea=0.0
 		if(ikk.eq.1) then
