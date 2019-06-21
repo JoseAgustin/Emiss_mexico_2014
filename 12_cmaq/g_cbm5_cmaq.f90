@@ -381,8 +381,8 @@ subroutine store
 call check( nf90_put_att(ncid, NF90_GLOBAL, "IOAPI_VERSION","$Id: @(#) ioapi library version 3.0 OpenMP enabled $"))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "EXEC_ID","????????????????                                                                "))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "FTYPE ",1))
-      call check( nf90_put_att(ncid, NF90_GLOBAL, "CDATE ",icdate))!
-      call check( nf90_put_att(ncid, NF90_GLOBAL, "CTIME ",ictime))!
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "CDATE ",intc(current_date(1:4))*1000+julday))!
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "CTIME ",0))!
       call check( nf90_put_att(ncid, NF90_GLOBAL, "WDATE ",intc(current_date(1:4))*1000+julday))!
       call check( nf90_put_att(ncid, NF90_GLOBAL, "WTIME ",0))!
       call check( nf90_put_att(ncid, NF90_GLOBAL, "SDATE ",intc(current_date(1:4))*1000+julday))!
