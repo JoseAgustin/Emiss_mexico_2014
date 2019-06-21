@@ -418,7 +418,7 @@ subroutine calculos
     if(scc(k,l).eq.'2850000010') epob(j,k,l)=emiss(i,l,k)*fp3(j)*1e6  ! Esteri Hosp
     if(scc(k,l).eq.'3333333333') epob(j,k,l)=emiss(i,l,k)*fp3(j)*1e6  ! Dist_LPG
     if(scc(k,l).eq.'5555555555') epob(j,k,l)=emiss(i,l,k)*fp3(j)*1e6  ! Uso_domestico
-    if(scc(k,l).eq.'2296000000') epob(j,k,l)=emiss(i,l,k)*fp3(j)*1e6
+    if(scc(k,l).eq.'2296000000') epob(j,k,l)=emiss(i,l,k)*fp3(j)*1e6  ! Terraceria
      end do
             exit invenp
         end if

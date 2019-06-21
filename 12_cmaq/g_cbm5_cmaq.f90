@@ -318,7 +318,7 @@ subroutine store
     integer :: id,iu
     integer :: julday
     integer :: isp(radm)
-    integer :: icdate,ictime
+    integer :: icdate,ictime,jcdate,jctime
     integer,dimension(NDIMS):: dim,id_dim
     integer,dimension(2,1,1)::TFLAG
     real,ALLOCATABLE :: ea(:,:,:,:)
@@ -383,9 +383,9 @@ call check( nf90_put_att(ncid, NF90_GLOBAL, "IOAPI_VERSION","$Id: @(#) ioapi lib
       call check( nf90_put_att(ncid, NF90_GLOBAL, "FTYPE ",1))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "CDATE ",icdate))!
       call check( nf90_put_att(ncid, NF90_GLOBAL, "CTIME ",ictime))!
-      call check( nf90_put_att(ncid, NF90_GLOBAL, "WDATE ",icdate))!
-      call check( nf90_put_att(ncid, NF90_GLOBAL, "WTIME ",ictime))!
-      call check( nf90_put_att(ncid, NF90_GLOBAL, "SDATE ",icdate))!
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "WDATE ",intc(current_date(1:4))*1000+julday))!
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "WTIME ",0))!
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "SDATE ",intc(current_date(1:4))*1000+julday))!
       call check( nf90_put_att(ncid, NF90_GLOBAL, "STIME ",0))!
       call check( nf90_put_att(ncid, NF90_GLOBAL, "TSTEP ",10000))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "NTHIK ",1))
@@ -396,7 +396,7 @@ call check( nf90_put_att(ncid, NF90_GLOBAL, "IOAPI_VERSION","$Id: @(#) ioapi lib
       call check( nf90_put_att(ncid, NF90_GLOBAL, "GDTYP ",2))!
       call check( nf90_put_att(ncid, NF90_GLOBAL, "P_ALP ",17.5))!
       call check( nf90_put_att(ncid, NF90_GLOBAL, "P_BET ",29.5))!
-      call check( nf90_put_att(ncid, NF90_GLOBAL, "P_GAM ",-100.5))!
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "P_GAM ",xlon(nx/2,ny/2)))! -100.5
       call check( nf90_put_att(ncid, NF90_GLOBAL, "XCENT ",xlon(nx/2,ny/2)))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "YCENT ",xlat(nx/2,ny/2)))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "XORIG ",(-nx/2*CDIM*1000)))
@@ -638,6 +638,7 @@ character(len=3) function mes(num)
     iyear=intc(year)
     imes=intc(mes)
     iday=intc(day)
+    print *,iyear,imes,iday
     if (mod(iyear,4)==0.and.mod(iyear,100)/=0) month(2)=29
     if (imes==1) then
       juliano=iday
