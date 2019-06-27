@@ -497,7 +497,7 @@ tiempo: do it=iit,eit
             end if   ! for kk == 1
           do i=1, nx
             do j=1, ny
-              do l=1,zlev
+              do l=1,1!zlev
                  ea(i,j,l,1)=eft(i,j,ikk,it+1,l) /(CDIM*CDIM)
               end do
             end do
@@ -512,7 +512,7 @@ tiempo: do it=iit,eit
 			ea=0.0
         do i=1, nx
           do j=1, ny
-            do l=1,zlev
+            do l=1,1!zlev
               ea(i,j,l,1)=eft(i,j,ikk,it+1,l) /(CDIM*CDIM) !entre 9x9 km
             end do
           end do
