@@ -279,15 +279,15 @@ subroutine lee
                 ! Emission from g to gmol by 1/WTM
                 if(ih.gt.9 .and. ih.lt.19) then
                   if(levl.lt.2) then
-                    eft(i,j,is,ih,1)=eft(i,j,is,ih,levl)+edum(ih)/3.6e12*scalp(ii)
+                    eft(i,j,is,ih,1)=eft(i,j,is,ih,1)+edum(ih)/3.6e12*scalp(ii)
                    else
-                    eft(i,j,is,ih,1)=eft(i,j,is,ih,levl)+edum(ih)/3.6e12
+                    eft(i,j,is,ih,1)=eft(i,j,is,ih,1)+edum(ih)/3.6e12
                   end if
                  else
                   if(levld.lt.2) then
-                    eft(i,j,is,ih,1)=eft(i,j,is,ih,levld)+edum(ih)/3.6e12*scalp(ii)
+                    eft(i,j,is,ih,1)=eft(i,j,is,ih,1)+edum(ih)/3.6e12*scalp(ii)
                   else
-                    eft(i,j,is,ih,1)=eft(i,j,is,ih,levld)+edum(ih)/3.6e12
+                    eft(i,j,is,ih,1)=eft(i,j,is,ih,1)+edum(ih)/3.6e12
                   end if
                  end if
 	        end do
