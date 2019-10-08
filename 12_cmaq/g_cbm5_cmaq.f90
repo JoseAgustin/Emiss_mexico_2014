@@ -23,7 +23,9 @@
 !   Se incluyen NO y NO2 de moviles         01/11/2017
 !   Se lee CDIM y titulo de localiza.csv    19/11/2017
 !   Salidas preparadas para CMAQ            04/08/2018
-!   Se emplea namelist.saprc                04/08/2018
+!   Se emplea namelist.cbm05                04/08/2018
+!   Se actualiza las fechas y datos         21/06/2019
+!   Se incluye descripción de archivo        8/10/2019
 !
 module varsc
     integer ::ncel   ! number of cell in the grid
@@ -408,13 +410,19 @@ call check( nf90_put_att(ncid, NF90_GLOBAL, "IOAPI_VERSION","$Id: @(#) ioapi lib
       call check( nf90_put_att(ncid, NF90_GLOBAL, "VGLVLS ","0,0"))!
       call check( nf90_put_att(ncid, NF90_GLOBAL, "GDNAM ","MEXICO_9"))!
       call check( nf90_put_att(ncid, NF90_GLOBAL, "UPNAM ","CREATESET"))!
-call check( nf90_put_att(ncid, NF90_GLOBAL, "VAR-LIST ","CO              NH3            NO              NO2             SO2             ALD2            CH4             ALDX            ETH             ETHA            ETOH            IOLE                 MEOH            FORM            ISOP            OLE             PAR             TERP            TOL             XYL             CO2             PM_10           PMFP            PSO4            PNO3            PM25I           POA             PEC                          "))
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "VAR-LIST ","CO              NH3            NO              NO2             SO2             ALD2            CH4             ALDX            ETH             ETHA            ETOH            IOLE                 MEOH            FORM            ISOP            OLE             PAR             TERP            TOL             XYL             CO2             PM_10           PMFP            PSO4            PNO3            PM25I           POA             PEC                          "))
+call check( nf90_put_att(ncid, NF90_GLOBAL, "FILEDESC","Area source emissions data                                                      /FROM/ CCAUNAM                                                                 /VERSION/ CIEM1.0_                                                                                                                                            /BASE YEAR/     2014                                                            /NUMBER OF FILES/   1                                                           /FILE POSITION/   1                                                             /NUMBER OF VARIABLES/  28"))
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "HISTORY",""))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "MECHANISM",mecha))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "CREATION_DATE",hoy))
 
 	print *,"Define las variables"
 !  Define las variables
 	call check( nf90_def_var(ncid, "TFLAG", NF90_INT, dimids3,id_var(radm+1) ) )
+!      Assign  attributes
+      call check( nf90_put_att(ncid, id_var(radm+1), "units", "<YYYYDDD,HHMMSS>"  ) )
+      call check( nf90_put_att(ncid, id_var(radm+1), "long_name", "FLAG           "  ) )
+      call check( nf90_put_att(ncid, id_var(radm+1), "var_desc", "Timestep-valid flags:  (1) YYYYDDD or (2) HHMMSS                                "  ) )
 !  Attributos para cada variable 
 !    call check( nf90_def_var(ncid, "XLONG", NF90_REAL,(/id_dim(3),id_dim(4),id_dim(1)/),id_varlong ) )
 !       ! Assign  attributes

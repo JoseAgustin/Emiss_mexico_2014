@@ -23,7 +23,7 @@
 !   Se lee CDIM y titulo de localiza.csv    19/11/2017
 !   Para anio 2018                          16/01/2018
 !   Se calcula el dia juliano                3/08/2018
-!   CF compilat                             26/06/2019
+!   CF compliance                           26/06/2019
 !
 module vars
     integer :: nf    ! number of files antropogenic
@@ -415,44 +415,42 @@ subroutine store
 	        ! Assign  attributes
         call check( nf90_put_att(ncid, id_varlong, "FieldType", 104 ) )
         call check( nf90_put_att(ncid, id_varlong, "MemoryOrder", "XYZ") )
-        call check( nf90_put_att(ncid, id_varlong, "description", "LONGITUDE, WEST IS NEGATIVE") )
+        call check( nf90_put_att(ncid, id_varlong, "long_name", "LONGITUDE, WEST IS NEGATIVE") )
         call check( nf90_put_att(ncid, id_varlong, "units", "degree_east"))
-        call check( nf90_put_att(ncid, id_varlong, "axis", "X") )
-      call check( nf90_def_var(ncid, "XLAT", NF90_REAL,(/id_dim(3),id_dim(4),id_dim(1)/),id_varlat ) )
+        call check( nf90_put_att(ncid, id_varlong, "standard_name", "longitude") )
+        call check( nf90_def_var(ncid, "XLAT", NF90_REAL,(/id_dim(3),id_dim(4),id_dim(1)/),id_varlat ) )
 	        ! Assign  attributes
         call check( nf90_put_att(ncid, id_varlat, "FieldType", 104 ) )
         call check( nf90_put_att(ncid, id_varlat, "MemoryOrder", "XYZ") )
-        call check( nf90_put_att(ncid, id_varlat, "description", "LATITUDE, SOUTH IS NEGATIVE") )
+        call check( nf90_put_att(ncid, id_varlat, "long_name", "LATITUDE, SOUTH IS NEGATIVE") )
         call check( nf90_put_att(ncid, id_varlat, "units", "degree_north"))
-        call check( nf90_put_att(ncid, id_varlat, "axis", "Y") )
+        call check( nf90_put_att(ncid, id_varlat, "standard_name", "latitude") )
          print *," Pob"
         call check( nf90_def_var(ncid,"POB",NF90_REAL,(/id_dim(3),id_dim(4),id_dim(1)/) ,id_varpop ) )
             ! Assign  attributes
         call check( nf90_put_att(ncid, id_varpop, "FieldType", 104 ) )
         call check( nf90_put_att(ncid, id_varpop, "MemoryOrder", "XYZ") )
-        call check(nf90_put_att(ncid,id_varpop,"description","Population in each grid"))
-        call check( nf90_put_att(ncid, id_varpop, "units", "number"))
+        call check(nf90_put_att(ncid,id_varpop,"long_name","Population in each grid"))
+        call check( nf90_put_att(ncid, id_varpop, "units", "1"))
 ! Para Mercator
       call check( nf90_def_var(ncid, "UTMx", NF90_REAL,(/id_dim(3),id_dim(4)/),id_utmx ) )
       ! Assign  attributes
         call check( nf90_put_att(ncid, id_utmx, "FieldType", 104 ) )
         call check( nf90_put_att(ncid, id_utmx, "MemoryOrder", "XYZ") )
-        call check( nf90_put_att(ncid, id_utmx, "description", "UTM coordinate west-east") )
+        call check( nf90_put_att(ncid, id_utmx, "long_name", "UTM coordinate west-east") )
         call check( nf90_put_att(ncid, id_utmx, "units", "km"))
-        call check( nf90_put_att(ncid, id_utmx, "axis", "X") )
       call check( nf90_def_var(ncid, "UTMy", NF90_REAL,(/id_dim(3),id_dim(4)/),id_utmy ) )
       ! Assign  attributes
         call check( nf90_put_att(ncid, id_utmy, "FieldType", 104 ) )
         call check( nf90_put_att(ncid, id_utmy, "MemoryOrder", "XYZ") )
-        call check( nf90_put_att(ncid, id_utmy, "description", "UTM coordinate sotuth-north") )
+        call check( nf90_put_att(ncid, id_utmy, "long_name", "UTM coordinate sotuth-north") )
         call check( nf90_put_att(ncid, id_utmy, "units", "km"))
-        call check( nf90_put_att(ncid, id_utmy, "axis", "Y") )
       call check( nf90_def_var(ncid, "UTMz", NF90_INT,(/id_dim(3),id_dim(4)/),id_utmz ) )
       ! Assign  attributes
         call check( nf90_put_att(ncid, id_utmz, "FieldType", 104 ) )
         call check( nf90_put_att(ncid, id_utmz, "MemoryOrder", "XYZ") )
-        call check( nf90_put_att(ncid, id_utmz, "description", "UTM Zone") )
-        call check( nf90_put_att(ncid, id_utmz, "units", "None"))
+        call check( nf90_put_att(ncid, id_utmz, "long_name", "UTM Zone") )
+        call check( nf90_put_att(ncid, id_utmz, "units", "1"))
 	do i=1,radm
 		if(i.lt.ipm-1 ) then
 			call crea_attr(ncid,4,dimids4,ename(i),cname(i),id_var(i))
