@@ -4,32 +4,40 @@
 
 .IGNORE:
 MAKE    =       make -i -f Makefile
+LN      =    ln -s
 CD      =       cd
 RM	=	/bin/rm -f 
 RM_LIST =	*.log
 #	Targets for supported architectures
 
 default:
-	( $(CD) 02_aemis   ; $(MAKE)  );\
-	( $(CD) 03_movilspatial ; $(MAKE) -j 3 );\
-	( $(CD) 04_temis   ; $(MAKE) );\
-	( $(CD) 05_semisM  ; $(MAKE) );\
-	( $(CD) 06_temisM  ; $(MAKE) );\
-	( $(CD) 07_puntual ; $(MAKE) );\
-	( $(CD) 08_spec    ; $(MAKE) -j 3);\
-	( $(CD) 09_pm25spec; $(MAKE) -j 3 );\
-	( $(CD) 10_storage ; $(MAKE) -j 4 )
+    @echo " "
+    @echo "Type one of the following:"
+    @echo "make intel              for compiling with ifort"
+    @echo "make pgi                for PGI fortran"
+    @echo "make clean                to remove all .o files, the core file and the executable"
+    @echo " "
+intel:
+    ( $(CD) 02_aemis   ; $(MAKE) intel );\
+    ( $(CD) 03_movilspatial ; $(MAKE) -j 3 intel );\
+    ( $(CD) 04_temis   ; $(MAKE) intel );\
+    ( $(CD) 05_semisM  ; $(MAKE) intel );\
+    ( $(CD) 06_temisM  ; $(MAKE) intel );\
+    ( $(CD) 07_puntual ; $(MAKE) intel );\
+    ( $(CD) 08_spec    ; $(MAKE) -j 3 intel);\
+    ( $(CD) 09_pm25spec; $(MAKE) -j 3 intel);\
+    ( $(CD) 10_storage ; $(MAKE) -j 4 intel)
 
-code:
-	( $(CD) 02_aemis ; $(MAKE) code);\
-	( $(CD) 03_movilspatial ; $(MAKE) code);\
-	( $(CD) 04_temis   ; $(MAKE) code "FC= ifort" );\
-	( $(CD) 05_semisM  ; $(MAKE) code  "FC= ifort");\
-	( $(CD) 06_temisM  ; $(MAKE) code  );\
-	( $(CD) 07_puntual ; $(MAKE) code  );\
-	( $(CD) 08_spec    ; $(MAKE) code  );\
-	( $(CD) 09_pm25spec; $(MAKE) code  );\
-	( $(CD) 10_storage ; $(MAKE) code  )
+pgi:
+    ( $(CD) 02_aemis ; $(MAKE) pgi);\
+    ( $(CD) 03_movilspatial ; $(MAKE) pgi);\
+    ( $(CD) 04_temis   ; $(MAKE) pgi  );\
+    ( $(CD) 05_semisM  ; $(MAKE) pgi  );\
+    ( $(CD) 06_temisM  ; $(MAKE) pgi  );\
+    ( $(CD) 07_puntual ; $(MAKE) pgi  );\
+    ( $(CD) 08_spec    ; $(MAKE) -j 3 pgi );\
+    ( $(CD) 09_pm25spec; $(MAKE) -j 3 pgi );\
+    ( $(CD) 10_storage ; $(MAKE) -j 3 pgi )
 clean:
 	( $(CD) 02_aemis   ; $(MAKE) clean  );\
 	( $(CD) 03_movilspatial ; $(MAKE) clean);\
