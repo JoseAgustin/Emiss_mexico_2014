@@ -10,7 +10,8 @@
 !            mecanismo RADM2 en formato netcdf y con NAMELIST
 !
 ! ifort -O2 -axAVX -lnetcdff -L$NETCDF/lib -I$NETCDF/include g_radm_2017.f90 -o radm2017.exe
-!
+! pgf90 -O3 -fastsse -lnetcdff -L$NETCDF/lib -I$NETCDF/include g_radm_2017.f90
+!  -o radm2017.exe
 !
 !   Actualizacion de xlat, xlon             26/08/2012
 !   Conversion de unidades en aerosoles     04/10/2012

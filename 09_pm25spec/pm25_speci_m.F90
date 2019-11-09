@@ -128,7 +128,11 @@ subroutine lee
 	end do
 300 continue
 	do i=1,size(prof2)
+#ifndef PGI
 		print '(2i,<nclass>F)',prof2(i),i,(fclass(i,l),l=1,nclass)
+#else
+                print '(2i,6F)',prof2(i),i,(fclass(i,l),l=1,nclass)
+#endif
 	end do
 	close(16)
 	return
@@ -174,7 +178,11 @@ implicit none
 	write(20,'(A,A)')cname(j), 'Emissions'
 	write(20,*) size(emis,dim=1),current_date,', ',cdia
 		do k=1,size(emis,dim=1)
+#ifndef PGI
 			write(20,'(I7,x,<nh>(ES11.4,x))')grid2(k),(emis(k,j,i),i=1,size(emis,dim=3))
+#else
+                        write(20,'(I7,x,24(ES11.4,x))')grid2(k),(emis(k,j,i),i=1,size(emis,dim=3))
+#endif
             do i=1,size(emis,dim=3)
                 suma=suma+emis(k,j,i)
             end do

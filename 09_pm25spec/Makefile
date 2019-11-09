@@ -42,26 +42,59 @@ default:
 	fi ; \
 	fi ; \
 
+pgi:
+	uname -a >  .tmpfile
+	grep Linux .tmpfile ; \
+	if [ $$? = 0 ]; then echo "Compiling for Linux PGI" ;               \
+	( $(MAKE) all                          \
+	"RM             = $(RM)"        "RM_LIST        = $(RM_LIST)"   \
+	"LN             = $(LN)"        "MACH           = PGI"          \
+	"MAKE           = $(MAKE)"      "CPP            = fpp"  \
+	"CPPFLAGS       = -I.  "      \
+	"FC             = pgf90"        "FCFLAGS        = -O3 -fastsse -Mfree" \
+	"LDOPTIONS      = -O3 -fastsse -Mfree " \
+	"CFLAGS         = -I."          \
+	"LOCAL_LIBRARIES=  " ) ; \
+	else \
+	grep Darwin .tmpfile ; \
+	if [ $$? = 0 ]; then echo "Compiling for Darwin PGI" ;              \
+	( $(MAKE) all                          \
+	"RM             = $(RM)"        "RM_LIST        = $(RM_LIST)"   \
+	"LN             = $(LN)"        "MACH           = PGI"          \
+	"MAKE           = $(MAKE)"      "CPP            = fpp"  \
+	"CPPFLAGS       =  "      \
+	"FC             = pgf90"        "FCFLAGS        = -O3 -fastsse -Mfree" \
+	"LDOPTIONS      = -O3 -fastsse -Mfree " \
+	"CFLAGS         = -I."          \
+ 	"LOCAL_LIBRARIES=  " ) ; \
+ 	else echo "Do not know how to compile for the `cat .tmpfile` machine." \
+	fi ; \
+	fi ; \
+	fi ; \
+
 # Ejecuta
 all :	spm25a.exe spm25m.exe spm25p.exe
 
 spm25a.exe: $(objec1)
 	$(FC) -o $@ $(objec1) $(LDOPTIONS)
 
-pm25_speci_a.o: pm25_speci_a.f90
-	$(FC) -c $< $(FCFLAGS)
+pm25_speci_a.o: pm25_speci_a.F90
+	$(CPP) $<  $(CPPFLAGS) -D$(MACH) > $*.f90
+	$(FC) -c $*.f90 $(FCFLAGS)
  
 spm25m.exe: $(objec2)
 	$(FC) -o $@ $(objec2) $(LDOPTIONS)
 
-pm25_speci_m.o: pm25_speci_m.f90
-	$(FC) -c $< $(FCFLAGS)
+pm25_speci_m.o: pm25_speci_m.F90
+	$(CPP) $<  $(CPPFLAGS) -D$(MACH) > $*.f90
+	$(FC) -c $*.f90 $(FCFLAGS)
 
 spm25p.exe: $(objec3)
 	$(FC) -o $@ $(objec3) $(LDOPTIONS)
 
-pm25_speci_p.o: pm25_speci_p.f90
-	$(FC) -c $< $(FCFLAGS)
+pm25_speci_p.o: pm25_speci_p.F90
+	$(CPP) $<  $(CPPFLAGS) -D$(MACH) > $*.f90
+	$(FC) -c $*.f90 $(FCFLAGS)
 
 
 clean:

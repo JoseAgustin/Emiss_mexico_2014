@@ -1,13 +1,13 @@
 !
-!                    pm25_speci_a.f90
+!	pm25_speci_p.f90
 !	
 !
 !  Creado por Jose Agustin Garcia Reynoso el 11/06/12.
 !
 ! Proposito:
 !          Especiacion de PM2.5 en diferentes categorias para
-!          fuentes de area
-! Speciation of pm2.5 in different categories
+!          fuentes puntuales
+! Speciation of pm2.5 in different categories for point sources
 !
 !Profile #	Profile Name	SPEC	POA	PEC	GSO4	PNO3	OTHER
 ! POA Primary organic aerosol
@@ -16,19 +16,21 @@
 ! GSO4	primary sulfate
 ! OTHER PMFINE, generally crustal
 !
-!  compile: ifort -O2 -axAVX  pm25_speci_a.f90 -o spm25a.exe
+!  compile: ifort -O2 -axAVX  pm25_speci_p.f90 -o spm25p.exe
 !
-!   modificado
-!   10/07/2017  Para 2014 
+!  Modification
 !
-module var_spma
+!  Inclusion of 2 layers
+!
+module var_spmp
 integer :: nh     !number of hours in a day
-integer :: nclass !number the clasess in profiles_spc.txt
-integer lfa  ! line number in area file TPM252014.txt
+integer :: nclass !number the clasess in pm25_profiles.csv
+integer lfa  ! line number in area file T_ANNPM25.txt
 integer,allocatable ::grid(:)   ! grid id from emissions file
 integer,allocatable ::grid2(:)   ! different grid id from emissions file
 integer,allocatable :: isp(:)   ! number of chemical species in profile j
 integer,allocatable ::profile(:),prof2(:) ! profile ID from file scc-profiles
+integer,allocatable :: capa(:,:)   ! level of the emission
 integer*8, allocatable:: iscc(:) !SCC from emissions file
 real,allocatable :: ea(:,:)      ! emissions en TPM25 file grid , nh
 real,allocatable :: emis(:,:,:)  ! emissions id cel, category, hours
@@ -41,9 +43,9 @@ parameter (nspecies=5,nh=24)
 
 common /date/ current_date,cdia
 
-end module var_spma
-program pm25_speciation
-use var_spma
+end module var_spmp
+program pm25_speci_p
+use var_spmp
 
 	call lee
 	
@@ -61,25 +63,27 @@ subroutine lee
 	character(len=10) ::cdum
 	character(len=25):: fname
 	logical ::lfil
-	fname='TAPM2_2014.csv'
+	fname='T_ANNPM25.csv'
 	print *, 'Reading : ',trim(fname)
 	open (unit=10,file=fname,status='old',action='read')
 	read(10,*) cdum  ! header
 	read(10,*) lfa,current_date,cdia  ! header
 	i=0
 	do 
-	read(10,*,end=100) cdum 
-	i=i+1
+        read(10,*,end=100) cdum
+        i=i+1
 	end do
 100 continue
 	print *,'Number of lines=',i,lfa
 	lfa=i
-	allocate(grid(lfa),iscc(lfa),ea(lfa,nh),profile(lfa))
+	allocate(grid(lfa),iscc(lfa),ea(lfa,nh),profile(lfa),capa(lfa,2))
+	profile=0
+    ea=0.0
 	rewind(10)
 	read (10,*) cdum  ! header 1
 	read (10,*) cdum  ! header 2
 	do i=1,lfa
-	read (10,*)grid(i),iscc(i),(ea(i,j),j=1,nh)
+        read (10,*)iscc(i),grid(i),capa(i,1),(ea(i,j),j=1,nh),capa(i,2)
 	end do
 	close(10)
 ! READING  and findign profiles
@@ -94,8 +98,8 @@ subroutine lee
 		end do
 	end do
 200 continue
-	do i=1,60
-	 if(profile(i).eq.0) print *,iscc(i),' ',i
+	do i=1,lfa
+	 if(profile(i).eq.0) print *,'No profile: ',iscc(i),' ',i
 	end do
 	close(15)
 	!print '(15I5)',(profile(i),i=1,lfa)
@@ -108,7 +112,7 @@ subroutine lee
 	open(unit=16,file=fname,status='old',action='read')
 	read(16,*)cdum
 	read(16,*) nclass
-	if(nclass.gt.30) stop "Change size in fagg dimension"
+	if(nclass.gt.5) stop "Change size in fagg dimension"
 	rewind(16)
 	allocate(cname(nclass))
 	read(16,*)cdum
@@ -127,12 +131,11 @@ subroutine lee
 		end do
 	end do
 300 continue
-	do i=1,size(prof2)
-		write(6,323) prof2(i),i,(fclass(i,l),l=1,nclass)
-	end do
+	!do i=1,size(prof2)
+	!	print '(2i,<nclass>F)',prof2(i),i,(fclass(i,l),l=1,nclass)
+	!end do
 	close(16)
 	return
-    323 format(2i,<nclass>F)
 end subroutine lee
 
 subroutine calculos
@@ -170,40 +173,51 @@ implicit none
 	print *,maxval(emis),'Valor maximo'
 	do j=1,size(emis,dim=2)
     suma=0.
-	fname=trim(cname(j))//'_A.txt'
+	fname=trim(cname(j))//'_P.txt'
 	open(unit=20,file=fname,action='write')
 	write(20,'(A,A)')cname(j), 'Emissions'
 	write(20,*) size(grid2),current_date,', ',cdia
-		do k=1,size(grid2)
-			write(20,'(I7,x,<nh>(ES11.4,x))')grid2(k),(emis(k,j,i),i=1,size(emis,dim=3))
-            do i=1,size(emis,dim=3)
-               suma=suma+emis(k,j,i)
-            end do
+		do k=1,size(emis,dim=1)
+            if(emis(k,j,1).ne.0 .and. emis(k,j,12).ne.0 .and. emis(k,j,23).ne.0 )then
+                write(20,200)grid2(k),capa(k,1),(emis(k,j,i),i=1,size(emis,dim=3)),capa(k,2)
+                do i=1,size(emis,dim=3)
+                    suma=suma+emis(k,j,i)
+                end do
+           end if
 		end do
     write(6,*)cname(j),",",suma
 	close(20)
 	end do
-    print *,"***** DONE PM2.5 AREA SPECIATION *****"
+#ifndef PGI
+200 format(I7,x,I3,x,<nh>(ES11.4,x),I3)
+#else
+200 format(I7,x,I3,x,24(ES11.4,x),I3)
+#endif
+    print *,"*****  DONE PM2.5 POINT SPECIATION  *****"
 end subroutine guarda
-
+!                       _
+!  ___ ___  _   _ _ __ | |_
+! / __/ _ \| | | | '_ \| __|
+!| (_| (_) | |_| | | | | |_
+! \___\___/ \__,_|_| |_|\__|
 subroutine count
 	integer i,j,nn
 	logical,allocatable::xl(:)
 	nn=size(profile)
 	allocate(xl(nn))
 	xl=.true.
-	do i=1,40!nn-1
-		do j=i+1,41!nn
+	do i=1,nn-1
+		do j=i+1,nn
 			if(profile(j).eq.profile(i).and.xl(j)) 	xl(j)=.false.
 		end do
 	end do
 	j=0
-	do i=1,41!nn
+	do i=1,nn
 		if(xl(i)) j=j+1
 	end do
 	allocate(prof2(j),isp(j))
 	j=0
-	do i=1,41!nn
+	do i=1,nn
 		if(xl(i)) then
 		j=j+1
 		prof2(j)=profile(i)
@@ -213,7 +227,7 @@ subroutine count
  print *,'Number different profiles',j !,prof2
 !
   deallocate(xl)
-  allocate(xl(lfa))
+  allocate(xl(size(iscc)))
 
   xl=.true.
   do i=1,lfa-1
@@ -238,4 +252,4 @@ subroutine count
   deallocate(xl)
 end subroutine count
 
-end program pm25_speciation
+end program pm25_speci_p

@@ -34,7 +34,7 @@ RM_LIST =       *.mod *.o core .tmpfile *.exe A*_2014.csv
 INTEL_LIB =     /opt/intel/lib
 
 # Ejecuta
-intel:
+default:
 	uname -a > .tmpfile
 	grep Linux .tmpfile ; \
 	if [ $$? = 0 ]; then echo "Compiling for Linux" ;               \

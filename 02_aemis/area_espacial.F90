@@ -518,11 +518,10 @@ subroutine guarda
         end do
     close(10)
     end do
-#ifdef INTEL
+#ifndef PGI
 300 format(I3,", g_per_year",<nnscc>(",",A10))
 310 format(I9,",",I6,",",F,",",F,<nnscc>(",",ES12.5))
-#endif
-#ifdef PGI
+#else
 300 format(I3,", g_per_year",60(",",A10))
 310 format(I9,",",I6,",",F,",",F,60(",",ES12.5))
 #endif
