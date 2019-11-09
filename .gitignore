@@ -12,14 +12,17 @@ libnetcdf*
 02_Aemis2
 02_aemis/A*14.csv
 02_aemis/ANH3_2014.csv 
+02_aemis/area_espacial.f90
 index.csv
 04_temis/TA*csv
 05_semisM/M_*.csv
+05_semisM/movil_spatial.f90
 06_temisM/TM*.csv
 06_temisM/GSO4_M.csv
 06_temisM/OTHE_M.csv
 06_temisM/POA_M.csv
 07_puntual/T_ANN*.csv
+07_puntual/t_puntal.f90
 08_spec/RA*txt
 08_spec/SAP*txt
 08_spec/CBM05*txt
@@ -28,6 +31,7 @@ index.csv
 09_pm25spec/*A.txt
 09_pm25spec/*P.txt
 09_pm25spec/*M.txt
+09_pm25spec/*f90*
 10_storage/wrfc*
 12_cmaq/cmaq.d0*
 Comentarios.docx
