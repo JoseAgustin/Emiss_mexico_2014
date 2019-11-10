@@ -100,8 +100,7 @@ ASpatial.exe: $(objects)
 	$(FC) -o $@ $(objects) $(LDOPTIONS) 
 
 area_espacial.o: area_espacial.F90
-	$(CPP) $<  $(CPPFLAGS) -D$(MACH) > $*.f90
-	$(FC) -c $*.f90 $(FCFLAGS)
+	$(FC) -c  $< $(FCFLAGS) -D$(MACH) 
  
 clean:
 		$(RM) $(RM_LIST)
