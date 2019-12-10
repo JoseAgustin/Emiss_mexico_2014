@@ -82,20 +82,20 @@ all :	carr.exe vial.exe agrega.exe
 carr.exe: $(objec1)
 	$(FC) -o $@ $(objec1) $(LDOPTIONS)
 
-suma_carretera.o: suma_carretera.f90
-	$(FC) -c $< $(FCFLAGS)
+suma_carretera.o: suma_carretera.F90
+	$(FC) -c $< $(FCFLAGS) -D$(MACH)
  
 vial.exe: $(objec2)
 	$(FC) -o $@ $(objec2) $(LDOPTIONS)
 
-suma_vialidades.o: suma_vialidades.f90
-	$(FC) -c $< $(FCFLAGS)
+suma_vialidades.o: suma_vialidades.F90
+	$(FC) -c $< $(FCFLAGS) -D$(MACH)
 
 agrega.exe: $(objec3)
-	$(FC) -o $@ $(objec3) $(LDOPTIONS)
+	$(FC) -o $@ $(objec3) $(LDOPTIONS) 
 
 agrega.o: agrega.f90
-	$(FC) -c $< $(FCFLAGS)
+	$(FC) -c $< $(FCFLAGS) -D$(MACH)
 
 
 clean:

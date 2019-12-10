@@ -92,7 +92,11 @@ integer i,j
 open(unit=11,file='salida.csv',action='write')
     write(11, *)"GRID, CVE_ENT_MUN, frac, suma"
     do i=1,size(grid2)
+#ifndef PGI
+     write(11, '(I8,",",I6,2(",",ES))') grid2(i),icve3(i),rc(i),sum(i)
+#else
      write(11, '(I8,",",I6,2(",",E))') grid2(i),icve3(i),rc(i),sum(i)
+#endif
     end do
 close (11)
 end subroutine guarda

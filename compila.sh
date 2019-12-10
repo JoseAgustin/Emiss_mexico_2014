@@ -17,8 +17,8 @@ cd  02_aemis/
     wait
     ./ASpatial.exe > ../ejecuta.log &
 cd ../03_movilspatial/
-    ifort -O2 -axAVX suma_carretera.f90 -o carr.exe &
-    ifort -O2 -axAVX suma_vialidades.f90 -o vial.exe &
+    ifort -O2 -axAVX suma_carretera.F90 -o carr.exe &
+    ifort -O2 -axAVX suma_vialidades.F90 -o vial.exe &
     ifort -O2 -axAVX agrega.f90 -o agrega.exe &
     wait
     ./carr.exe > ../ejecuta.log &
