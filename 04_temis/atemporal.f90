@@ -479,16 +479,21 @@ print *,"   Compute  VOCs",size(idcel2)
 subroutine storage
   implicit none
   integer i,j,k,l
+  real suma
   character(len=3):: cdia(7)
   data cdia/'MON','TUE','WND','THR','FRD','SAT','SUN'/
- print *,"Storage"
+  print *,"Storage"
   do k=1,nf-2
    open(unit=10,file=casn(k),action='write')
    write(10,*)casn(k),'ID, Hr to Hr24'
-   write(10,'(I8,4A)')size(emis,dim=1),",",current_date,', ',cdia(daytype)
+   write(10,'(I8,4A)')size(emis,dim=1),",",current_date,", ",cdia(daytype)
    do i=1,size(emis,dim=1)
-     write(10,100)idcel2(i),(emis(i,k,l),l=1,nh)
-   end do
+    suma=0
+    do l=1,nh
+        suma=suma+emis(i,k,l)
+    end do
+        if(suma.gt.0) write(10,100)idcel2(i),(emis(i,k,l),l=1,nh)
+    end do
    close(unit=10)
   end do
 100 format(I7,",",23(ES12.3,","),ES12.3)
@@ -500,7 +505,11 @@ subroutine storage
    write(10,'(I8,4A)')size(epm2,dim=1)*nscc(k),",",current_date,', ',cdia(daytype)
    do i=1,size(epm2,dim=1)
      do j=1,nscc(k)
-     write(10,110)idcel2(i),iscc(j),(epm2(i,j,l),l=1,nh)
+     suma=0
+     do l=1,nh
+       suma=suma+epm2(i,j,l)
+     end do
+     if(suma.gt.0)  write(10,110)idcel2(i),iscc(j),(epm2(i,j,l),l=1,nh)
      end do
    end do
 	close(10)
@@ -512,7 +521,11 @@ subroutine storage
    write(10,'(I8,4A)')size(evoc,dim=1)*nscc(k),",",current_date,', ',cdia(daytype)
    do i=1,size(evoc,dim=1)
      do j=1,nscc(k)
-     write(10,110)idcel2(i),iscc(j),(evoc(i,j,l),l=1,nh)
+     suma=0
+     do l=1,nh
+       suma=suma+evoc(i,j,l)
+     end do
+     if(suma.gt.0) write(10,110)idcel2(i),iscc(j),(evoc(i,j,l),l=1,nh)
      end do
    end do
 	close(10)
@@ -567,7 +580,6 @@ end subroutine count
 ! |_| |_|\__,_|___/\___/___|_| |_|\___/|_|  \__,_|_|  |_|\___/
 !                     |_____|
 subroutine huso_horario
-
     integer ::i,k,iedo
     print *,'Start uso horario'
     do k=1,nf
