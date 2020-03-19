@@ -329,7 +329,7 @@ subroutine calculos
     print *,"     Ferrocarriles"
     pffc: do j=1,size(ft) !grid
         invfcc: do i=1,nm          ! municipality
-        if(idm(j).eq.iem(k,i)) then
+        if(idt(j).eq.iem(k,i)) then
         do l=1,nscc(k)
             if(scc(k,l).eq.'2285000000') etre(j,k,l)=emiss(i,l,k)*ft(j)*1e6 !Locomotoras de arrastre
             if(scc(k,l).eq.'2285002010') etre(j,k,l)=emiss(i,l,k)*ft(j)*1e6 !Locomotoras de patio
