@@ -1,5 +1,5 @@
 !
-!	area_espacial.f90
+!	area_espacial.F90
 !	
 !
 !	Created by Agustin on 14/08/12.
@@ -7,7 +7,7 @@
 !
 !  Reads lan use fracction per cell and land use tyepe and converts
 !  to a one line.
-!  ifort -o ASpatial.exe -O3 area_espacial.f90
+!  ifort -o ASpatial.exe -O3 area_espacial.F90
 !
 !  4/03/2015  Correction in Terminasl 2801500002 and agricultural fires 2801500250
 !  8/07/2017  For 2014 from 57 to 58 categories (ladrilleras), 2457 Municipalidades
@@ -276,9 +276,9 @@ subroutine calculos
            do l=1,nscc(k)     ! SCC
     if(scc(k,l).eq.'2801500100') eagr(j,k,l)=emiss(i,l,k)*fa(j)*1e6  ! Qmas_agricolas
     if(scc(k,l).eq.'2801000002') eagr(j,k,l)=emiss(i,l,k)*fa(j)*1e6  ! Labranza Siemb
-    if(scc(k,l).eq.'2267005000') eagr(j,k,l)=emiss(i,l,k)*fa(j)*1e6  ! Comb_agricola_LPG
+!    if(scc(k,l).eq.'2267005000') eagr(j,k,l)=emiss(i,l,k)*fa(j)*1e6  ! Comb_agricola_LPG
     if(scc(k,l).eq.'2801700000') eagr(j,k,l)=emiss(i,l,k)*fa(j)*1e6  ! Fertilizantes
-    if(scc(k,l).eq.'2270005000') eagr(j,k,l)=emiss(i,l,k)*fa(j)*1e6  ! Comb_agricola_Diesel
+!    if(scc(k,l).eq.'2270005000') eagr(j,k,l)=emiss(i,l,k)*fa(j)*1e6  ! Comb_agricola_Diesel
     if(scc(k,l).eq.'2805020000') eagr(j,k,l)=emiss(i,l,k)*fa(j)*1e6  ! Ganaderas
     if(scc(k,l).eq.'2461850000') eagr(j,k,l)=emiss(i,l,k)*fa(j)*1e6  ! Pesticidas
     if(scc(k,l).eq.'2801000005') eagr(j,k,l)=emiss(i,l,k)*fa(j)*1e6  ! Labranza_Cose
@@ -419,6 +419,8 @@ subroutine calculos
     if(scc(k,l).eq.'3333333333') epob(j,k,l)=emiss(i,l,k)*fp3(j)*1e6  ! Dist_LPG
     if(scc(k,l).eq.'5555555555') epob(j,k,l)=emiss(i,l,k)*fp3(j)*1e6  ! Uso_domestico
     if(scc(k,l).eq.'2296000000') epob(j,k,l)=emiss(i,l,k)*fp3(j)*1e6  ! Terraceria
+    if(scc(k,l).eq.'2270005000') epob(j,k,l)=emiss(i,l,k)*fp3(j)*1e6  ! Comb_agricola_Diesel
+    if(scc(k,l).eq.'2267005000') epob(j,k,l)=emiss(i,l,k)*fp3(j)*1e6  ! Comb_agricola_LPG
      end do
             exit invenp
         end if
