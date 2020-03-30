@@ -99,6 +99,7 @@ implicit none
       allocate(griv(nl),idv(nl),fv(nl))
       call lee_file(fname, griv,idv,fv)
     fname='gri_pob.csv'
+    nl=cuenta_linea(fname)-1
       allocate(grip(nl),idp(nl),fp1(nl),fp2(nl),fp3(nl))
       open(unit=10,file=fname,status='OLD',action='read')
         read (10,*) cdum
