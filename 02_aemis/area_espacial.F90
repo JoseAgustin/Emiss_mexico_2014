@@ -66,171 +66,48 @@ subroutine lee
 implicit none
     integer i,j,k
     character(len=14):: cdum,fname
-    fname='bosque.csv'
-    print *,'Lee ',fname
-    open(unit=10,file=fname,status='OLD',action='read')
-    read (10,*) cdum
-    nl=0
-    do
-        read(10,*,end=100) cdum
-        nl=nl+1
-    end do
-100 print *,'numero de lineas',nl
-    allocate(grib(nl),idb(nl),fb(nl))
-    rewind(10)
-    read (10,*) cdum
-    do i=1,nl
-        read(10,*)grib(i),idb(i),fb(i)
-    end do
-    close(10)
-!
-    fname='agricola.csv'
-    print *,'Lee ',fname
-    open(unit=10,file=fname,status='OLD',action='read')
-    read (10,*) cdum
-    nl=0
-    do
-    read(10,*,end=110) cdum
-    nl=nl+1
-    end do
-110 print *,'numero de lineas',nl
-    allocate(gria(nl),ida(nl),fa(nl))
-    rewind(10)
-    read (10,*) cdum
-    do i=1,nl
-    read(10,*)gria(i),ida(i),fa(i)
-    end do
-    close(10)
-!
-    fname='gri_pob.csv'
-    print *,'Lee ',fname
-    open(unit=10,file=fname,status='OLD',action='read')
-    read (10,*) cdum
-    read (10,*) cdum
-    nl=0
-    do
-        read(10,*,end=120) cdum
-        nl=nl+1
-    end do
-120 print *,'numero de lineas',nl
-!    Population fraction fp1 furb, fp2 frural, fp3 fpob
-    allocate(grip(nl),idp(nl),fp1(nl),fp2(nl),fp3(nl))
-    rewind(10)
-    read (10,*) cdum
-    read (10,*) cdum
-    do i=1,nl
-        read(10,*)grip(i),idp(i),fp1(i),fp2(i),fp3(i)
-        ! GRIDCODE ID urb,frural,fpob
-    end do
-    close(10)
-!
+    fname="bosque.csv"
+      nl= cuenta_linea(fname)
+      allocate (grib(nl),idb(nl),fb(nl))
+      call lee_file (fname, grib,idb,fb)
+    fname="agricola.csv"
+      nl=cuenta_linea(fname)
+      allocate (gria(nl),ida(nl),fa(nl))
+      call lee_file(fname, gria,ida,fa)
     fname='aeropuerto.csv'
-    print *,'Lee ',fname
-    open(unit=10,file=fname,status='OLD',action='read')
-    read (10,*) cdum
-    nl=0
-    do
-    read(10,*,end=130) cdum
-    nl=nl+1
-    end do
-130 print *,'numero de lineas',nl
-    allocate(grie(nl),ide(nl),fe(nl))
-    rewind(10)
-    read (10,*) cdum
-    do i=1,nl
-    read(10,*)grie(i),ide(i),fe(i)
-    end do
-    close(10)
-!
+      nl=cuenta_linea(fname)
+      allocate (grie(nl),ide(nl),fe(nl))
+      call lee_file(fname, grie,ide,fe)
     fname='centrales.csv'
-    print *,'Lee ',fname
-    open(unit=10,file=fname,status='OLD',action='read')
-    read (10,*) cdum
-    nl=0
-    do
-        read(10,*,end=140) cdum
-        nl=nl+1
-    end do
-140 print *,'numero de lineas',nl
-    allocate(griu(nl),idu(nl),fu(nl))
-    rewind(10)
-    read (10,*) cdum
-    do i=1,nl
-        read(10,*)griu(i),idu(i),fu(i)
-    end do
-    close(10)
-!
+      nl=cuenta_linea(fname)
+      allocate (griu(nl),idu(nl),fu(nl))
+      call lee_file(fname, griu,idu,fu)
     fname='puertos.csv'
-    print *,'Lee ',fname
-    open(unit=10,file=fname,status='OLD',action='read')
-    read (10,*) cdum
-    nl=0
-    do
-        read(10,*,end=150) cdum
-        nl=nl+1
-    end do
-150 print *,'numero de lineas',nl
-    allocate(grim(nl),idm(nl),fm(nl))
-    rewind(10)
-    read (10,*) cdum
-    do i=1,nl
-        read(10,*)grim(i),idm(i),fm(i)
-    end do
-    close(10)
-!
+      nl=cuenta_linea(fname)
+      allocate (grim(nl),idm(nl),fm(nl))
+      call lee_file(fname, grim,idm,fm)
     fname='ffcc.csv'
-    print *,'Lee ',fname
-    open(unit=10,file=fname,status='OLD',action='read')
-    read (10,*) cdum
-    nl=0
-    do
-        read(10,*,end=160) cdum
-    nl=nl+1
-    end do
-160 print *,'numero de lineas',nl
-    allocate(grit(nl),idt(nl),ft(nl))
-    rewind(10)
-    read (10,*) cdum
-    do i=1,nl
-        read(10,*)grit(i),idt(i),ft(i)
-    end do
-    close(10)
-!
+      nl=cuenta_linea(fname)
+      allocate(grit(nl),idt(nl),ft(nl))
+      call lee_file(fname, grit,idt,ft)
     fname='gri_ter.csv'
-    print *,'Lee ',fname
-    open(unit=10,file=fname,status='OLD',action='read')
-    read (10,*) cdum
-    nl=0
-    do
-    read(10,*,end=170) cdum
-    nl=nl+1
-    end do
-170 print *,'numero de lineas',nl
-    allocate(grir(nl),idr(nl),fr(nl))
-    rewind(10)
-    read (10,*) cdum
-    do i=1,nl
-    read(10,*)grir(i),idr(i),fr(i)
-    end do
-    close(10)
-    !
+      nl=cuenta_linea(fname)
+      allocate(grir(nl),idr(nl),fr(nl))
+      call lee_file(fname, grir,idr,fr)
     fname='gri_pav.csv'
-    print *,'Lee ',fname
-    open(unit=10,file=fname,status='OLD',action='read')
-    read (10,*) cdum
-    nl=0
-    do
-    read(10,*,end=180) cdum
-    nl=nl+1
-    end do
-180 print *,'numero de lineas',nl
-    allocate(griv(nl),idv(nl),fv(nl))
-    rewind(10)
-    read (10,*) cdum
-    do i=1,nl
-    read(10,*)griv(i),idv(i),fv(i)
-    end do
-    close(10)
+      nl=cuenta_linea(fname)
+      allocate(griv(nl),idv(nl),fv(nl))
+      call lee_file(fname, griv,idv,fv)
+    fname='gri_pob.csv'
+      allocate(grip(nl),idp(nl),fp1(nl),fp2(nl),fp3(nl))
+      open(unit=10,file=fname,status='OLD',action='read')
+        read (10,*) cdum
+        read (10,*) cdum
+        do i=1,nl
+          read(10,*)grip(i),idp(i),fp1(i),fp2(i),fp3(i)
+          ! GRIDCODE ID urb,frural,fpob
+        end do
+      close(10)
 !
     do k=1,nf
         open (unit=10,file=efile(k),status='OLD',action='read')
@@ -528,5 +405,36 @@ subroutine guarda
 310 format(I9,",",I6,",",F,",",F,60(",",ES12.5))
 #endif
 end subroutine guarda
+integer function cuenta_linea(archivo)
+  implicit none
+  character (len=*), intent(in)::archivo
+  character (len=18) ::cdum
+  print *,'Lee ',archivo
+  open(unit=10,file=archivo,status='OLD',action='read')
+  read (10,*) cdum
+  cuenta_linea=0
+  do
+    read(10,*,end=100) cdum
+    cuenta_linea=cuenta_linea+1
+  end do
+100 print *,' Numero de lineas',cuenta_linea
+  close(10)
+end function
+
+subroutine lee_file(archivo,grid,id,frac)
+  implicit none
+  integer, dimension(:), intent(out)::grid,id
+  integer i,nl
+  real,dimension(:), intent(out)::frac
+  character (len=*), intent(in)::archivo
+  character (len=18):: cdum
+  open(unit=10,file=archivo,status='OLD',action='read')
+  read (10,*) cdum
+  do i=1,size(id)
+    read(10,*)grid(i),id(i),frac(i)
+  end do
+  close(10)
+end subroutine
+
 end program area_espacial
 
