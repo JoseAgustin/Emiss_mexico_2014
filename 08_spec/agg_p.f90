@@ -70,7 +70,6 @@ subroutine lee
 	allocate(grid(lfa),iscc(lfa),ea(lfa,nh),profile(lfa))
 	allocate(capa(lfa,2))
 	profile=0
-	isp=0
 	rewind(10)
 	read (10,*) cdum  ! header 1
 	read (10,*) cdum  ! header 2
@@ -109,7 +108,7 @@ subroutine lee
 	print *,"Number of profiles",nclass
 	!print '(<nclass>(A,x))',cname
 	j=0
-        isp=0
+   isp=0
 	do
 		read(16,*,end=300,ERR=300)id
 		do i=1,size(prof2)
