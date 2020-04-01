@@ -9,8 +9,9 @@
 !  to a one line.
 !  ifort -o ASpatial.exe -O3 area_espacial.F90
 !
-!  4/03/2015  Correction in Terminasl 2801500002 and agricultural fires 2801500250
-!  8/07/2017  For 2014 from 57 to 58 categories (ladrilleras), 2457 Municipalidades
+!   4/03/2015  Correction in Terminasl 2801500002 and agricultural fires 2801500250
+!   8/07/2017  For 2014 from 57 to 58 categories (ladrilleras), 2457 Municipalidades
+!  30/03/2020  Update in lee $ guarda
 !
 module land
     integer nl,nf,nm,nnscc,edo, mun
@@ -308,94 +309,100 @@ subroutine calculos
 end subroutine calculos
 subroutine guarda
     implicit none
-    integer i,k,l
+    integer i,k,l,max_val
     real suma
     Print *,"   ***   Guarda   ***"
+    max_val=max0(size(fa),size(fb),size(fp1),size(fr),size(fv))
+   print *,max_val
+
     do k=1,nf
         open(unit=10,file=ofile(k),ACTION='write')
         write(10,*)'grid,CID,Furb,Frural,SCCs'
         write(10,300)nscc(k),(scc(k,i),i=1,nscc(k))
-        print *,"   Agricola ",ofile(k)
-        do i=1,size(fa)
+        print *,"Archivo: ",ofile(k)
+        do i=1,max_val
+            if ( i.le.size(fa) )then
+              suma=0
+              do l=1,nscc(k)
+                 suma=suma+eagr(i,k,l)
+              end do
+              if (suma.gt. 0.) &
+&             write(10,310) gria(i),ida(i),0.,fa(i),(eagr(i,k,l),l=1,nscc(k))
+            end if
+            if(i.le.size(fb)) then
+              suma=0
+              do l=1,nscc(k)
+                suma=suma+ebos(i,k,l)
+              end do
+              if (suma.gt.0 ) &
+&             write(10,310) grib(i),idb(i),0.,fb(i),(ebos(i,k,l),l=1,nscc(k))
+            end if
+          if(i.le.size(fp1)) then
+              suma=0
+              do l=1,nscc(k)
+                suma=suma+epob(i,k,l)
+              end do
+              if (suma.gt.0 .and. i.le.size(fp1)) &
+&             write(10,310) grip(i),idp(i),fp1(i),fp2(i),(epob(i,k,l),l=1,nscc(k))
+          end if
+        if(i.le.size(fe)) then
             suma=0
             do l=1,nscc(k)
-               suma=suma+eagr(i,k,l)
+              suma=suma+eaer(i,k,l)
             end do
             if (suma.gt.0) &
-&           write(10,310) gria(i),ida(i),0.,fa(i),(eagr(i,k,l),l=1,nscc(k))
-        end do
-        print *,"   Bosque"
-        do i=1,size(fb)
+&           write(10,310) grie(i),ide(i),fe(i),0.,(eaer(i,k,l),l=1,nscc(k))
+        end if
+        if (i.le. size(fu)) then
             suma=0
             do l=1,nscc(k)
-            suma=suma+ebos(i,k,l)
+              suma=suma+ecen(i,k,l)
             end do
             if (suma.gt.0) &
-&            write(10,310) grib(i),idb(i),0.,fb(i),(ebos(i,k,l),l=1,nscc(k))
-        end do
-        print *,"   Poblacion"
-        do i=1,size(fp1)
-           suma=0
-            do l=1,nscc(k)
-            suma=suma+epob(i,k,l)
-            end do
-            if (suma.gt.0) &
-&            write(10,310) grip(i),idp(i),fp1(i),fp2(i),(epob(i,k,l),l=1,nscc(k))
-        end do
-        print *,"   Aeropuerto"
-        do i=1,size(fe)
+&           write(10,310) griu(i),idu(i),fu(i),0.,(ecen(i,k,l),l=1,nscc(k))
+        end if
+        if(i.le.size(fm)) then
             suma=0
             do l=1,nscc(k)
-            suma=suma+eaer(i,k,l)
+              suma=suma+epue(i,k,l)
             end do
             if (suma.gt.0) &
-&        write(10,310) grie(i),ide(i),fe(i),0.,(eaer(i,k,l),l=1,nscc(k))
-        end do
-        print *,"   Centrales Autobuses"
-        do i=1,size(fu)
+&           write(10,310) grim(i),idm(i),fm(i),0.,(epue(i,k,l),l=1,nscc(k))
+        end if
+        if (i.le.size(ft)) then
             suma=0
             do l=1,nscc(k)
-            suma=suma+ecen(i,k,l)
-            end do
-            if (suma.gt.0) &
-&        write(10,310) griu(i),idu(i),fu(i),0.,(ecen(i,k,l),l=1,nscc(k))
-        end do
-        print *,"   Puertos Maritimos"
-        do i=1,size(fm)
-            suma=0
-            do l=1,nscc(k)
-            suma=suma+epue(i,k,l)
-            end do
-            if (suma.gt.0) &
-&        write(10,310) grim(i),idm(i),fm(i),0.,(epue(i,k,l),l=1,nscc(k))
-        end do
-        print *,"   Ferrocarriles"
-        do i=1,size(ft)
-            suma=0
-            do l=1,nscc(k)
-            suma=suma+etre(i,k,l)
+              suma=suma+etre(i,k,l)
             end do
             if (suma.gt.0) &
 &          write(10,310) grit(i),idt(i),ft(i),0.,(etre(i,k,l),l=1,nscc(k))
-        end do
-    print *,"   Terraceria"
-    do i=1,size(fr)
+        end if
+      if (i.le.size(fr)) then
         suma=0
         do l=1,nscc(k)
-        suma=suma+eter(i,k,l)
+          suma=suma+eter(i,k,l)
         end do
         if (suma.gt.0) &
 &        write(10,310) grir(i),idr(i),fr(i),0.,(eter(i,k,l),l=1,nscc(k))
-        end do
-    print *,"   Vialidades"
-    do i=1,size(fv)
+      end if
+      if(i.le.size(fv)) then
         suma=0
         do l=1,nscc(k)
-        suma=suma+evia(i,k,l)
+          suma=suma+evia(i,k,l)
         end do
         if (suma.gt.0) &
 &        write(10,310) griv(i),idv(i),fv(i),0.,(evia(i,k,l),l=1,nscc(k))
-        end do
+      end if
+      if(i.eq.size(fa)) print *,"   Agricola "
+      if(i.eq.size(fb)) print *,"   Bosque"
+      if(i.eq.size(fp1))print *,"   Poblacion"
+      if(i.eq.size(fe)) print *,"   Aeropuerto"
+      if(i.eq.size(fu)) print *,"   Centrales Autobuses"
+      if(i.eq.size(fm)) print *,"   Puertos Maritimos"
+      if(i.eq.size(ft)) print *,"   Ferrocarriles"
+      if(i.eq.size(fr)) print *,"   Terraceria"
+      if(i.eq.size(fv)) print *,"   Vialidades"
+    end do
     close(10)
     end do
 #ifndef PGI
