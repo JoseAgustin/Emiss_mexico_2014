@@ -593,7 +593,7 @@ end subroutine check
 ! M      M E         S
 ! M      M EEEEE SSSS
          character(len=3)function mes(num)
-          character*2 num
+          character*2, INTENT(IN) :: num
           select case (num)
             case('01')
               mes='Jan'

@@ -9,8 +9,9 @@
 !  to a one line.
 !  ifort -o ASpatial.exe -O3 area_espacial.F90
 !
-!  4/03/2015  Correction in Terminasl 2801500002 and agricultural fires 2801500250
-!  8/07/2017  For 2014 from 57 to 58 categories (ladrilleras), 2457 Municipalidades
+!   4/03/2015  Correction in Terminasl 2801500002 and agricultural fires 2801500250
+!   8/07/2017  For 2014 from 57 to 58 categories (ladrilleras), 2457 Municipalidades
+!  30/03/2020  Update in lee $ guarda
 !
 module land
     integer nl,nf,nm,nnscc,edo, mun
@@ -66,171 +67,49 @@ subroutine lee
 implicit none
     integer i,j,k
     character(len=14):: cdum,fname
-    fname='bosque.csv'
-    print *,'Lee ',fname
-    open(unit=10,file=fname,status='OLD',action='read')
-    read (10,*) cdum
-    nl=0
-    do
-        read(10,*,end=100) cdum
-        nl=nl+1
-    end do
-100 print *,'numero de lineas',nl
-    allocate(grib(nl),idb(nl),fb(nl))
-    rewind(10)
-    read (10,*) cdum
-    do i=1,nl
-        read(10,*)grib(i),idb(i),fb(i)
-    end do
-    close(10)
-!
-    fname='agricola.csv'
-    print *,'Lee ',fname
-    open(unit=10,file=fname,status='OLD',action='read')
-    read (10,*) cdum
-    nl=0
-    do
-    read(10,*,end=110) cdum
-    nl=nl+1
-    end do
-110 print *,'numero de lineas',nl
-    allocate(gria(nl),ida(nl),fa(nl))
-    rewind(10)
-    read (10,*) cdum
-    do i=1,nl
-    read(10,*)gria(i),ida(i),fa(i)
-    end do
-    close(10)
-!
-    fname='gri_pob.csv'
-    print *,'Lee ',fname
-    open(unit=10,file=fname,status='OLD',action='read')
-    read (10,*) cdum
-    read (10,*) cdum
-    nl=0
-    do
-        read(10,*,end=120) cdum
-        nl=nl+1
-    end do
-120 print *,'numero de lineas',nl
-!    Population fraction fp1 furb, fp2 frural, fp3 fpob
-    allocate(grip(nl),idp(nl),fp1(nl),fp2(nl),fp3(nl))
-    rewind(10)
-    read (10,*) cdum
-    read (10,*) cdum
-    do i=1,nl
-        read(10,*)grip(i),idp(i),fp1(i),fp2(i),fp3(i)
-        ! GRIDCODE ID urb,frural,fpob
-    end do
-    close(10)
-!
+    fname="bosque.csv"
+      nl= cuenta_linea(fname)
+      allocate (grib(nl),idb(nl),fb(nl))
+      call lee_file (fname, grib,idb,fb)
+    fname="agricola.csv"
+      nl=cuenta_linea(fname)
+      allocate (gria(nl),ida(nl),fa(nl))
+      call lee_file(fname, gria,ida,fa)
     fname='aeropuerto.csv'
-    print *,'Lee ',fname
-    open(unit=10,file=fname,status='OLD',action='read')
-    read (10,*) cdum
-    nl=0
-    do
-    read(10,*,end=130) cdum
-    nl=nl+1
-    end do
-130 print *,'numero de lineas',nl
-    allocate(grie(nl),ide(nl),fe(nl))
-    rewind(10)
-    read (10,*) cdum
-    do i=1,nl
-    read(10,*)grie(i),ide(i),fe(i)
-    end do
-    close(10)
-!
+      nl=cuenta_linea(fname)
+      allocate (grie(nl),ide(nl),fe(nl))
+      call lee_file(fname, grie,ide,fe)
     fname='centrales.csv'
-    print *,'Lee ',fname
-    open(unit=10,file=fname,status='OLD',action='read')
-    read (10,*) cdum
-    nl=0
-    do
-        read(10,*,end=140) cdum
-        nl=nl+1
-    end do
-140 print *,'numero de lineas',nl
-    allocate(griu(nl),idu(nl),fu(nl))
-    rewind(10)
-    read (10,*) cdum
-    do i=1,nl
-        read(10,*)griu(i),idu(i),fu(i)
-    end do
-    close(10)
-!
+      nl=cuenta_linea(fname)
+      allocate (griu(nl),idu(nl),fu(nl))
+      call lee_file(fname, griu,idu,fu)
     fname='puertos.csv'
-    print *,'Lee ',fname
-    open(unit=10,file=fname,status='OLD',action='read')
-    read (10,*) cdum
-    nl=0
-    do
-        read(10,*,end=150) cdum
-        nl=nl+1
-    end do
-150 print *,'numero de lineas',nl
-    allocate(grim(nl),idm(nl),fm(nl))
-    rewind(10)
-    read (10,*) cdum
-    do i=1,nl
-        read(10,*)grim(i),idm(i),fm(i)
-    end do
-    close(10)
-!
+      nl=cuenta_linea(fname)
+      allocate (grim(nl),idm(nl),fm(nl))
+      call lee_file(fname, grim,idm,fm)
     fname='ffcc.csv'
-    print *,'Lee ',fname
-    open(unit=10,file=fname,status='OLD',action='read')
-    read (10,*) cdum
-    nl=0
-    do
-        read(10,*,end=160) cdum
-    nl=nl+1
-    end do
-160 print *,'numero de lineas',nl
-    allocate(grit(nl),idt(nl),ft(nl))
-    rewind(10)
-    read (10,*) cdum
-    do i=1,nl
-        read(10,*)grit(i),idt(i),ft(i)
-    end do
-    close(10)
-!
+      nl=cuenta_linea(fname)
+      allocate(grit(nl),idt(nl),ft(nl))
+      call lee_file(fname, grit,idt,ft)
     fname='gri_ter.csv'
-    print *,'Lee ',fname
-    open(unit=10,file=fname,status='OLD',action='read')
-    read (10,*) cdum
-    nl=0
-    do
-    read(10,*,end=170) cdum
-    nl=nl+1
-    end do
-170 print *,'numero de lineas',nl
-    allocate(grir(nl),idr(nl),fr(nl))
-    rewind(10)
-    read (10,*) cdum
-    do i=1,nl
-    read(10,*)grir(i),idr(i),fr(i)
-    end do
-    close(10)
-    !
+      nl=cuenta_linea(fname)
+      allocate(grir(nl),idr(nl),fr(nl))
+      call lee_file(fname, grir,idr,fr)
     fname='gri_pav.csv'
-    print *,'Lee ',fname
-    open(unit=10,file=fname,status='OLD',action='read')
-    read (10,*) cdum
-    nl=0
-    do
-    read(10,*,end=180) cdum
-    nl=nl+1
-    end do
-180 print *,'numero de lineas',nl
-    allocate(griv(nl),idv(nl),fv(nl))
-    rewind(10)
-    read (10,*) cdum
-    do i=1,nl
-    read(10,*)griv(i),idv(i),fv(i)
-    end do
-    close(10)
+      nl=cuenta_linea(fname)
+      allocate(griv(nl),idv(nl),fv(nl))
+      call lee_file(fname, griv,idv,fv)
+    fname='gri_pob.csv'
+    nl=cuenta_linea(fname)-1
+      allocate(grip(nl),idp(nl),fp1(nl),fp2(nl),fp3(nl))
+      open(unit=10,file=fname,status='OLD',action='read')
+        read (10,*) cdum
+        read (10,*) cdum
+        do i=1,nl
+          read(10,*)grip(i),idp(i),fp1(i),fp2(i),fp3(i)
+          ! GRIDCODE ID urb,frural,fpob
+        end do
+      close(10)
 !
     do k=1,nf
         open (unit=10,file=efile(k),status='OLD',action='read')
@@ -430,94 +309,100 @@ subroutine calculos
 end subroutine calculos
 subroutine guarda
     implicit none
-    integer i,k,l
+    integer i,k,l,max_val
     real suma
     Print *,"   ***   Guarda   ***"
+    max_val=max0(size(fa),size(fb),size(fp1),size(fr),size(fv))
+   print *,max_val
+
     do k=1,nf
         open(unit=10,file=ofile(k),ACTION='write')
         write(10,*)'grid,CID,Furb,Frural,SCCs'
         write(10,300)nscc(k),(scc(k,i),i=1,nscc(k))
-        print *,"   Agricola ",ofile(k)
-        do i=1,size(fa)
+        print *,"Archivo: ",ofile(k)
+        do i=1,max_val
+            if ( i.le.size(fa) )then
+              suma=0
+              do l=1,nscc(k)
+                 suma=suma+eagr(i,k,l)
+              end do
+              if (suma.gt. 0.) &
+&             write(10,310) gria(i),ida(i),0.,fa(i),(eagr(i,k,l),l=1,nscc(k))
+            end if
+            if(i.le.size(fb)) then
+              suma=0
+              do l=1,nscc(k)
+                suma=suma+ebos(i,k,l)
+              end do
+              if (suma.gt.0 ) &
+&             write(10,310) grib(i),idb(i),0.,fb(i),(ebos(i,k,l),l=1,nscc(k))
+            end if
+          if(i.le.size(fp1)) then
+              suma=0
+              do l=1,nscc(k)
+                suma=suma+epob(i,k,l)
+              end do
+              if (suma.gt.0 .and. i.le.size(fp1)) &
+&             write(10,310) grip(i),idp(i),fp1(i),fp2(i),(epob(i,k,l),l=1,nscc(k))
+          end if
+        if(i.le.size(fe)) then
             suma=0
             do l=1,nscc(k)
-               suma=suma+eagr(i,k,l)
+              suma=suma+eaer(i,k,l)
             end do
             if (suma.gt.0) &
-&           write(10,310) gria(i),ida(i),0.,fa(i),(eagr(i,k,l),l=1,nscc(k))
-        end do
-        print *,"   Bosque"
-        do i=1,size(fb)
+&           write(10,310) grie(i),ide(i),fe(i),0.,(eaer(i,k,l),l=1,nscc(k))
+        end if
+        if (i.le. size(fu)) then
             suma=0
             do l=1,nscc(k)
-            suma=suma+ebos(i,k,l)
+              suma=suma+ecen(i,k,l)
             end do
             if (suma.gt.0) &
-&            write(10,310) grib(i),idb(i),0.,fb(i),(ebos(i,k,l),l=1,nscc(k))
-        end do
-        print *,"   Poblacion"
-        do i=1,size(fp1)
-           suma=0
-            do l=1,nscc(k)
-            suma=suma+epob(i,k,l)
-            end do
-            if (suma.gt.0) &
-&            write(10,310) grip(i),idp(i),fp1(i),fp2(i),(epob(i,k,l),l=1,nscc(k))
-        end do
-        print *,"   Aeropuerto"
-        do i=1,size(fe)
+&           write(10,310) griu(i),idu(i),fu(i),0.,(ecen(i,k,l),l=1,nscc(k))
+        end if
+        if(i.le.size(fm)) then
             suma=0
             do l=1,nscc(k)
-            suma=suma+eaer(i,k,l)
+              suma=suma+epue(i,k,l)
             end do
             if (suma.gt.0) &
-&        write(10,310) grie(i),ide(i),fe(i),0.,(eaer(i,k,l),l=1,nscc(k))
-        end do
-        print *,"   Centrales Autobuses"
-        do i=1,size(fu)
+&           write(10,310) grim(i),idm(i),fm(i),0.,(epue(i,k,l),l=1,nscc(k))
+        end if
+        if (i.le.size(ft)) then
             suma=0
             do l=1,nscc(k)
-            suma=suma+ecen(i,k,l)
-            end do
-            if (suma.gt.0) &
-&        write(10,310) griu(i),idu(i),fu(i),0.,(ecen(i,k,l),l=1,nscc(k))
-        end do
-        print *,"   Puertos Maritimos"
-        do i=1,size(fm)
-            suma=0
-            do l=1,nscc(k)
-            suma=suma+epue(i,k,l)
-            end do
-            if (suma.gt.0) &
-&        write(10,310) grim(i),idm(i),fm(i),0.,(epue(i,k,l),l=1,nscc(k))
-        end do
-        print *,"   Ferrocarriles"
-        do i=1,size(ft)
-            suma=0
-            do l=1,nscc(k)
-            suma=suma+etre(i,k,l)
+              suma=suma+etre(i,k,l)
             end do
             if (suma.gt.0) &
 &          write(10,310) grit(i),idt(i),ft(i),0.,(etre(i,k,l),l=1,nscc(k))
-        end do
-    print *,"   Terraceria"
-    do i=1,size(fr)
+        end if
+      if (i.le.size(fr)) then
         suma=0
         do l=1,nscc(k)
-        suma=suma+eter(i,k,l)
+          suma=suma+eter(i,k,l)
         end do
         if (suma.gt.0) &
 &        write(10,310) grir(i),idr(i),fr(i),0.,(eter(i,k,l),l=1,nscc(k))
-        end do
-    print *,"   Vialidades"
-    do i=1,size(fv)
+      end if
+      if(i.le.size(fv)) then
         suma=0
         do l=1,nscc(k)
-        suma=suma+evia(i,k,l)
+          suma=suma+evia(i,k,l)
         end do
         if (suma.gt.0) &
 &        write(10,310) griv(i),idv(i),fv(i),0.,(evia(i,k,l),l=1,nscc(k))
-        end do
+      end if
+      if(i.eq.size(fa)) print *,"   Agricola "
+      if(i.eq.size(fb)) print *,"   Bosque"
+      if(i.eq.size(fp1))print *,"   Poblacion"
+      if(i.eq.size(fe)) print *,"   Aeropuerto"
+      if(i.eq.size(fu)) print *,"   Centrales Autobuses"
+      if(i.eq.size(fm)) print *,"   Puertos Maritimos"
+      if(i.eq.size(ft)) print *,"   Ferrocarriles"
+      if(i.eq.size(fr)) print *,"   Terraceria"
+      if(i.eq.size(fv)) print *,"   Vialidades"
+    end do
     close(10)
     end do
 #ifndef PGI
@@ -528,5 +413,36 @@ subroutine guarda
 310 format(I9,",",I6,",",F,",",F,60(",",ES12.5))
 #endif
 end subroutine guarda
+integer function cuenta_linea(archivo)
+  implicit none
+  character (len=*), intent(in)::archivo
+  character (len=18) ::cdum
+  print *,'Lee ',archivo
+  open(unit=10,file=archivo,status='OLD',action='read')
+  read (10,*) cdum
+  cuenta_linea=0
+  do
+    read(10,*,end=100) cdum
+    cuenta_linea=cuenta_linea+1
+  end do
+100 print *,' Numero de lineas',cuenta_linea
+  close(10)
+end function
+
+subroutine lee_file(archivo,grid,id,frac)
+  implicit none
+  integer, dimension(:), intent(out)::grid,id
+  integer i,nl
+  real,dimension(:), intent(out)::frac
+  character (len=*), intent(in)::archivo
+  character (len=18):: cdum
+  open(unit=10,file=archivo,status='OLD',action='read')
+  read (10,*) cdum
+  do i=1,size(id)
+    read(10,*)grid(i),id(i),frac(i)
+  end do
+  close(10)
+end subroutine
+
 end program area_espacial
 

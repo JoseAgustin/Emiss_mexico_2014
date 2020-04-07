@@ -108,7 +108,7 @@ subroutine lee
 	print *,"Number of profiles",nclass
 	!print '(<nclass>(A,x))',cname
 	j=0
-        isp=0
+   isp=0
 	do
 		read(16,*,end=300,ERR=300)id
 		do i=1,size(prof2)
