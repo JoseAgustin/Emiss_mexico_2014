@@ -70,7 +70,6 @@ subroutine lee
 	allocate(grid(lfa),iscc(lfa),ea(lfa,nh),profile(lfa))
 	allocate(capa(lfa,2))
 	profile=0
-	isp=0
 	rewind(10)
 	read (10,*) cdum  ! header 1
 	read (10,*) cdum  ! header 2
