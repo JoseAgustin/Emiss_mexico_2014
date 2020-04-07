@@ -1,18 +1,19 @@
 !
-!	t_puntal.f90
+!	t_puntal.F90
 !	
 !
 !  Creado por Jose Agustin Garcia Reynoso el 06/06/12.
 ! Proposito
 !          Distribución temporal de las emisiones de fuentes puntuales
 !
-! ifort -O3 -axAVX  t_puntal.f90 -o Puntual.exe
+! ifort -O3 -axAVX  t_puntal.F90 -o Puntual.exe
 !
 !   modificado
 !   14/08/2012  nombre archivos de PM
 !   02/10/2012  Ajuste en horas dia previo subroutina lee
 !   12/07/2017  para 2014 y hEST
 !   18/07/2017  Incluye CO2, CN y CH4, dos alturas.
+!   06/04/2020  Incluye Horario de verano
 !
 module vars
 integer, parameter::nsp=10 !number of compounds
@@ -20,6 +21,7 @@ integer, parameter:: nh=24 !number of hours
 integer,parameter ::juliano=365 ! days in a year
 integer,parameter:: ipm=2  ! PM2.5
 integer,parameter:: ivoc=6  ! VOC position in puntual.csv
+integer :: iverano  ! si es en periodo de verano
 integer :: month,daytype
 integer*8,allocatable:: iscc(:)
 integer,allocatable :: capa(:,:),ict(:),jct(:),idcg(:,:)
@@ -87,6 +89,9 @@ implicit none
         write(current_date( 9:10),'(I2)') idia
     end if
 	print *,'Done fecha.txt ',current_date
+!Horario de verano Abril 6 a octubre 26
+      iverano=kverano(idia,month)
+!
       fweek=7.0/daym(month)! weeks per month
 !
 !   Days in 2014 year
@@ -237,7 +242,7 @@ implicit none
 	    read(18,*,END=230)jscc,(itfrc(l),l=1,25)
 	    do i=1,nl
 	      if(jscc.eq.profile(3,i)) then
-            m=4
+            m=4-iverano
             do l=1,nh
             if(m+l.gt.nh) then
               hEST(i,m+l-nh)=real(itfrc(l))/real(itfrc(25))*diap(i)
@@ -245,7 +250,7 @@ implicit none
               hEST(i,m+l)=real(itfrc(l))/real(itfrc(25))*dia(i)
             end if
             end do
-            m=5
+            m=5-iverano
 		    do l=1,nh
               if(m+l.gt.nh) then
                 hCST(i,m+l-nh)=real(itfrc(l))/real(itfrc(25))*diap(i)
@@ -253,7 +258,7 @@ implicit none
                 hCST(i,m+l)=real(itfrc(l))/real(itfrc(25))*dia(i)
 			  end if
 			end do
-		    m=6
+		    m=6-iverano
 		    do l=1,nh
               if(m+l.gt.nh) then
                 hMST(i,m+l-nh)=real(itfrc(l))/real(itfrc(25))*diap(i)
@@ -261,7 +266,7 @@ implicit none
                 hMST(i,m+l)=real(itfrc(l))/real(itfrc(25))*dia(i)
               end if
 			end do
-		    m=7
+		    m=7-iverano
 		    do l=1,nh
               if(m+l.gt.nh) then
                 hPST(i,m+l-nh)=real(itfrc(l))/real(itfrc(25))*diap(i)
@@ -288,7 +293,7 @@ implicit none
           read(19,*,END=240)jscc,(itfrc(l),l=1,25)
           do i=1,nl
             if(jscc.eq.profile(3,i)) then
-              m=4
+              m=4-iverano
                 do l=1,nh
                 if(m+l.gt.nh) then
                   hEST(i,m+l-nh)=real(itfrc(l))/real(itfrc(25))*diap(i)
@@ -296,19 +301,19 @@ implicit none
                   hEST(i,m+l)=real(itfrc(l))/real(itfrc(25))*dia(i)
                 end if
               end do
-              m=5
+              m=5-iverano
               do l=1,nh
               if(m+l.gt.nh) then
                   hCST(i,m+l-nh)=real(itfrc(l))/real(itfrc(25))*diap(i)
               end if
               end do
-              m=6
+              m=6-iverano
               do l=1,nh
                 if(m+l.gt.nh) then
                     hMST(i,m+l-nh)=real(itfrc(l))/real(itfrc(25))*diap(i)
                 end if
               end do
-              m=7
+              m=7-iverano
               do l=1,nh
                 if(m+l.gt.nh) then
                     hPST(i,m+l-nh)=real(itfrc(l))/real(itfrc(25))*diap(i)
@@ -424,4 +429,35 @@ end subroutine guarda
    end do
    RETURN
    end subroutine localization
+!  _  ____   _____ ___    _   _  _  ___
+! | |/ /\ \ / / __| _ \  /_\ | \| |/ _ \
+! | ' <  \ V /| _||   / / _ \| .` | (_) |
+! |_|\_\  \_/ |___|_|_\/_/ \_\_|\_|\___/
+!
+integer function kverano(ida,mes)
+    implicit none
+    integer, intent(in):: ida,mes
+    if (mes.lt.4  .or. mes .gt.10)then
+      kverano = 0
+      return
+    end if
+    if (mes.gt.4 .and. mes .lt.10) then
+      kverano = 1
+      write(6, 233)
+      return
+    end if
+    if (mes.eq.4 .and. ida .ge. 6) then
+      kverano = 1
+      write(6, 233)
+      return
+      elseif (mes.eq.10 .and. ida .le. 26) then
+        kverano = 1
+        write(6, 233)
+        return
+      else
+        kverano =0
+        return
+    end if
+233 format("******  HORARIO de VERANO *******")
+end function
 end program t_puntual
