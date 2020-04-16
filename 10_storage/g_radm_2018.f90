@@ -1,5 +1,5 @@
 !
-!	g_radm_2020.f90
+!	g_radm_2018.f90
 !	
 !
 !  Creado por Jose Agustin Garcia Reynoso el 19/11/2017.
@@ -9,7 +9,7 @@
 !            Guarda los datos del inventario para el
 !            mecanismo RADM2 en formato netcdf y con NAMELIST
 !
-! ifort -O2 -axAVX -lnetcdff -L$NETCDF/lib -I$NETCDF/include g_radm_2020.f90 -o radm2020.exe
+! ifort -O2 -axAVX -lnetcdff -L$NETCDF/lib -I$NETCDF/include g_radm_2018.f90 -o radm2018.exe
 !
 !
 !   Actualizacion de xlat, xlon             26/08/2012
@@ -22,8 +22,8 @@
 !   Se incluye NAMELIST                     08/11/2017
 !   Se lee CDIM y titulo de localiza.csv    19/11/2017
 !   Se calcula el dia juliano                3/08/2018
+!   Para anio 2018                          16/01/2018
 !   Para anio 2016                          23/10/2018
-!   Para anio 2020                          16/12/2019
 !   Actualizacion CH4 y BC                  16/04/2020
 !
 module vars
@@ -344,7 +344,7 @@ subroutine store
     call date_and_time(date,time)
      hoy=date(7:8)//'-'//mes(date(5:6))//'-'//date(1:4)//' '//time(1:2)//':'//time(3:4)//':'//time(5:10)
     print *,hoy
-    write(current_date(1:4),'(I4)') 2020 !para 2020
+    write(current_date(1:4),'(I4)') 2018 !para 2018
     JULDAY=juliano(current_date(1:4),current_date(6:7),current_date(9:10))
      do periodo=1,1!1
 	  if(periodo.eq.1) then
@@ -391,8 +391,8 @@ subroutine store
       call check( nf90_put_att(ncid, NF90_GLOBAL, "CEN_LON",xlon(nx/2,ny/2)))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "TRUELAT1",17.5))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "TRUELAT2",29.5))
-      call check( nf90_put_att(ncid, NF90_GLOBAL, "MOAD_CEN_LAT",24.020222))
-      call check( nf90_put_att(ncid, NF90_GLOBAL, "STAND_LON",-102.036352))
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "MOAD_CEN_LAT",xlat(nx/2,ny/2)))
+      call check( nf90_put_att(ncid, NF90_GLOBAL, "STAND_LON",xlon(nx/2,ny/2)))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "POLE_LAT",90.))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "POLE_LON",0.))
       call check( nf90_put_att(ncid, NF90_GLOBAL, "GRIDTYPE","C"))

@@ -26,6 +26,7 @@
 !   Se emplea namelist.cbm05                04/08/2018
 !   Se actualiza las fechas y datos         21/06/2019
 !   Se incluye descripción de archivo        8/10/2019
+!   Actualizacion CH4 y BC                  16/04/2020
 !
 module varsc
     integer ::ncel   ! number of cell in the grid
@@ -181,7 +182,7 @@ subroutine lee
     CDIM=(utmx(2)-utmx(1))/1000.  ! from meters to km
     print *,CDIM,trim(titulo)
 	close(10)
-
+  deallocate(utmx,utmy,utmz,lon,lat,pop)
 	do ii=1,nf
 		open(11,file=fnameA(ii),status='OLD',action='READ')
         read(11,*)cdum
@@ -192,9 +193,8 @@ subroutine lee
             read(11,*)j,current_date
         end if
 !
-        is= ii
-        if(ii.eq.icn) is=jcn  ! suma todo el Carbono Negro
-        if(ii.eq.imt) is=jmt   ! suma todo el Metano
+      if(ii.ge.ipm-1) then; is=ipm ;else ;is=ii;end if
+      if(ii.eq.imt) is=jmt   ! suma todo el Metano
         write(6,'(i4,x,A,A,I3,I3)') ii,fnameA(ii),current_date,is
 		do
 		 if(ii.eq.ipm) then !for PM2.5
@@ -208,7 +208,7 @@ subroutine lee
 			k=k+1
 			if(idcg(k).eq.idcf) then
 			  do ih=1,nh
-				eft(i,j,is,ih,1)=eft(i,j,is,ih,1)+edum(ih)/WTM(is)*scala(ii) ! Emission from kg to gmol
+				eft(i,j,ii,ih,1)=eft(i,j,ii,ih,1)+edum(ih)/WTM(is)*scala(ii) ! Emission from kg to gmol
               end do
 			  exit busca
 			end if
@@ -238,7 +238,7 @@ subroutine lee
 			if(idcg(k).eq.idcf) then
 			  do ih=1,nh
                 ! Emission from g to gmol by 1/WTM
-                eft(i,j,is,ih,1)=eft(i,j,is,ih,1)+edum(ih)/WTM(is)*scalm(ii)
+                eft(i,j,ii,ih,1)=eft(i,j,ii,ih,1)+edum(ih)/WTM(is)*scalm(ii)
 			  end do
 			  exit busca2
 			end if
@@ -273,15 +273,15 @@ subroutine lee
                 ! Emission from g to gmol by 1/WTM
                 if(ih.gt.9 .and. ih.lt.19) then
                   if(levl.lt.2) then
-                    eft(i,j,is,ih,levl)=eft(i,j,is,ih,levl)+edum(ih)/WTM(is)*scalp(ii)
+                    eft(i,j,ii,ih,levl)=eft(i,j,ii,ih,levl)+edum(ih)/WTM(is)*scalp(ii)
                   else
-                    eft(i,j,is,ih,levl)=eft(i,j,is,ih,levl)+edum(ih)/WTM(is)
+                    eft(i,j,ii,ih,levl)=eft(i,j,ii,ih,levl)+edum(ih)/WTM(is)
                   end if
                 else
                   if(levld.lt.2) then
-                    eft(i,j,is,ih,levld)=eft(i,j,is,ih,levld)+edum(ih)/WTM(is)*scalp(ii)
+                    eft(i,j,ii,ih,levld)=eft(i,j,ii,ih,levld)+edum(ih)/WTM(is)*scalp(ii)
                   else
-                    eft(i,j,is,ih,levld)=eft(i,j,is,ih,levld)+edum(ih)/WTM(is)
+                    eft(i,j,ii,ih,levld)=eft(i,j,ii,ih,levld)+edum(ih)/WTM(is)
                   end if
                 end if
 			  end do
@@ -345,7 +345,7 @@ subroutine store
     icdate=intc(date(1:4))*1000 + juliano(date(1:4),date(5:6),date(7:8))
     ictime=intc(time(1:2))*10000+intc(time(3:4))*100+intc(time(5:6))
     print *,hoy,icdate,ictime
-    !write(current_date(4:4),'(A1)')char(8+48)
+    write(current_date(1:4),'(I4)') 2019 !para 2019
     julday=juliano(current_date(1:4),current_date(6:7),current_date(9:10))
      do periodo=1,1! 1 o 2
 	  if(periodo.eq.1) then
@@ -424,48 +424,7 @@ call check( nf90_put_att(ncid, NF90_GLOBAL, "FILEDESC","Area source emissions da
       call check( nf90_put_att(ncid, id_var(radm+1), "long_name", "FLAG           "  ) )
       call check( nf90_put_att(ncid, id_var(radm+1), "var_desc", "Timestep-valid flags:  (1) YYYYDDD or (2) HHMMSS                                "  ) )
 !  Attributos para cada variable 
-!    call check( nf90_def_var(ncid, "XLONG", NF90_REAL,(/id_dim(3),id_dim(4),id_dim(1)/),id_varlong ) )
-!       ! Assign  attributes
-!      call check( nf90_put_att(ncid, id_varlong, "FieldType", 104 ) )
-!      call check( nf90_put_att(ncid, id_varlong, "MemoryOrder", "XYZ") )
-!      call check( nf90_put_att(ncid, id_varlong, "description", "LONGITUDE, WEST IS NEGATIVE") )
-!      call check( nf90_put_att(ncid, id_varlong, "units", "degree_east"))
-!      call check( nf90_put_att(ncid, id_varlong, "axis", "X") )
-!    call check( nf90_def_var(ncid, "XLAT", NF90_REAL,(/id_dim(3),id_dim(4),id_dim(1)/),id_varlat ) )
-       ! Assign  attributes
-!      call check( nf90_put_att(ncid, id_varlat, "FieldType", 104 ) )
-!      call check( nf90_put_att(ncid, id_varlat, "MemoryOrder", "XYZ") )
-!      call check( nf90_put_att(ncid, id_varlat, "description", "LATITUDE, SOUTH IS NEGATIVE") )
-!      call check( nf90_put_att(ncid, id_varlat, "units", "degree_north"))
-!      call check( nf90_put_att(ncid, id_varlat, "axis", "Y") )
-!     print *," Pob"
-!    call check( nf90_def_var(ncid,"POB",NF90_REAL,(/id_dim(3),id_dim(4),id_dim(1)/) ,id_varpop ) )
-!        ! Assign  attributes
-!      call check( nf90_put_att(ncid, id_varpop, "FieldType", 104 ) )
-!      call check( nf90_put_att(ncid, id_varpop, "MemoryOrder", "XYZ") )
-!      call check(nf90_put_att(ncid,id_varpop,"description","Population in each grid"))
-!      call check( nf90_put_att(ncid, id_varpop, "units", "number"))
-! Para Mercator
-!    call check( nf90_def_var(ncid, "UTMx", NF90_REAL,(/id_dim(3),id_dim(4)/),id_utmx ) )
-    ! Assign  attributes
-!      call check( nf90_put_att(ncid, id_utmx, "FieldType", 104 ) )
-!      call check( nf90_put_att(ncid, id_utmx, "MemoryOrder", "XYZ") )
-!      call check( nf90_put_att(ncid, id_utmx, "description", "UTM coordinate west-east") )
-!      call check( nf90_put_att(ncid, id_utmx, "units", "km"))
-!      call check( nf90_put_att(ncid, id_utmx, "axis", "X") )
-!    call check( nf90_def_var(ncid, "UTMy", NF90_REAL,(/id_dim(3),id_dim(4)/),id_utmy ) )
-    ! Assign  attributes
-!      call check( nf90_put_att(ncid, id_utmy, "FieldType", 104 ) )
-!      call check( nf90_put_att(ncid, id_utmy, "MemoryOrder", "XYZ") )
-!      call check( nf90_put_att(ncid, id_utmy, "description", "UTM coordinate sotuth-north") )
-!      call check( nf90_put_att(ncid, id_utmy, "units", "km"))
-!      call check( nf90_put_att(ncid, id_utmy, "axis", "Y") )
-!    call check( nf90_def_var(ncid, "UTMz", NF90_INT,(/id_dim(3),id_dim(4)/),id_utmz ) )
-    ! Assign  attributes
-!      call check( nf90_put_att(ncid, id_utmz, "FieldType", 104 ) )
-!      call check( nf90_put_att(ncid, id_utmz, "MemoryOrder", "XYZ") )
-!      call check( nf90_put_att(ncid, id_utmz, "description", "UTM Zone") )
-!      call check( nf90_put_att(ncid, id_utmz, "units", "None"))
+!
 	do i=1,radm
 		if(i.lt.ipm-1 ) then
 			call crea_attr(ncid,4,dimids4,ename(i),cname(i),id_var(i))
@@ -476,10 +435,6 @@ call check( nf90_put_att(ncid, NF90_GLOBAL, "FILEDESC","Area source emissions da
 !
 !   Terminan definiciones
 		call check( nf90_enddef(ncid) )
-!  Coordenadas Mercator UTM
-!    call check( nf90_put_var(ncid, id_utmx,utmxd,start=(/1,1/)) )
-!    call check( nf90_put_var(ncid, id_utmy,utmyd,start=(/1,1/)) )
-!    call check( nf90_put_var(ncid, id_utmz,utmzd,start=(/1,1/)) )
 !
 !    Inicia loop de tiempo
 
@@ -488,34 +443,32 @@ tiempo: do it=iit,eit
         gases: do ikk=1,ipm-2!for gases
 			ea=0.0
 		if(ikk.eq.1) then
-		      if (it.lt.10) then
-			  write(current_date(13:13),'(A1)')char(it+48)
-			    else
-		        id = int((it)/10)+48 !  Decenas
-                iu = it-10*int((it)/10)+48 ! unidades
-			  write(current_date(12:13),'(A1,A1)')char(id),char(iu)
-			  end if 
+      write(current_date(12:13),'(I2.2)')it
       end if   ! for kk == 1
         TFLAG(1,1,1)=intc(current_date(1:4))*1000+julday
         TFLAG(2,1,1)=it*10000 !HHMMSS
 			  if (periodo.eq. 1) then
             call check( nf90_put_var(ncid,id_var(radm+1),TFLAG,start=(/1,ikk,it+1/)) )
-!            call check( nf90_put_var(ncid, id_varlong,xlon,start=(/1,1,it+1/)) )
-!            call check( nf90_put_var(ncid, id_varlat,xlat,start=(/1,1,it+1/)) )
-!            call check( nf90_put_var(ncid, id_varpop,pob,  start=(/1,1,it+1/)) )
 			  else
             call check( nf90_put_var(ncid,id_var(radm+1),TFLAG,start=(/1,ikk,it-11/)) )
- !           call check( nf90_put_var(ncid, id_varlong,xlon,start=(/1,1,it-11/)) )
- !           call check( nf90_put_var(ncid, id_varlat,xlat,start=(/1,1,it-11/)) )
- !           call check( nf90_put_var(ncid, id_varpop,pob,start=(/1,1,it-11/)) )
-			  endif
+ 			  endif
+        if(ikk.ne.jmt) then
             do i=1, nx
               do j=1, ny
                 do l=1,zlev
-                   ea(i,j,l,1)=eft(i,j,ikk,it+1,l)! /(CDIM*CDIM)
+                   ea(i,j,l,1)=eft(i,j,ikk,it+1,l)
                 end do
               end do
             end do
+          else
+            do i=1, nx
+              do j=1, ny
+                do l=1,zlev
+                  ea(i,j,l,1)=(eft(i,j,ikk,it+1,l)+eft(i,j,imt,it+1,l))
+                end do
+              end do
+            end do
+          end if
             if(periodo.eq.1) then
                 call check( nf90_put_var(ncid, id_var(isp(ikk)),ea,start=(/1,1,1,it+1/)) )
             else
@@ -524,6 +477,7 @@ tiempo: do it=iit,eit
 		 end do gases
         aerosol: do ikk=ipm-1,ns
 			ea=0.0
+      if(ikk.ne.jcn)then
             do i=1, nx
               do j=1, ny
                do l=1,zlev
@@ -531,7 +485,15 @@ tiempo: do it=iit,eit
                 end do
               end do
             end do
-!
+        else
+          do i=1, nx
+            do j=1, ny
+              do l=1,zlev
+                ea(i,j,l,1)=(eft(i,j,ikk,it+1,l)+eft(i,j,icn,it+1,l))/(CDIM*CDIM)
+              end do
+            end do
+          end do
+        end if!
             if(periodo.eq.1) then
                 call check( nf90_put_var(ncid,id_var(radm+1),TFLAG,start=(/1,ikk,it+1/)) )
                 call check( nf90_put_var(ncid, id_var(isp(ikk)),ea,start=(/1,1,1,it+1/)) )
@@ -609,30 +571,18 @@ end subroutine check
 character(len=3) function mes(num)
           character*2 num
           select case (num)
-            case('01')
-              mes='Jan'
-             case('02')
-             mes='Feb'
-             case('03')
-             mes='Mar'
-             case('04')
-             mes='Apr'
-             case('05')
-             mes='May'
-             case('06')
-             mes='Jun'
-             case('07')
-             mes='Jul'
-             case('08')
-             mes='Aug'
-             case('09')
-             mes='Sep'
-             case('10')
-             mes='Oct'
-             case('11')
-             mes='Nov'
-             case('12')
-             mes='Dec'
+            case('01'); mes='Jan'
+            case('02'); mes='Feb'
+            case('03'); mes='Mar'
+            case('04'); mes='Apr'
+            case('05'); mes='May'
+            case('06'); mes='Jun'
+            case('07'); mes='Jul'
+            case('08'); mes='Aug'
+            case('09'); mes='Sep'
+            case('10'); mes='Oct'
+            case('11'); mes='Nov'
+            case('12'); mes='Dec'
              end select
           return
           end function
