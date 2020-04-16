@@ -24,6 +24,7 @@
 !   Se emplea namelist.saprc
 !   Se calcula el dia juliano                3/08/2018
 !   Se actualiza formato para CHIMERE       19/19/2019
+!   Se actualiza BC y CH4                   16/04/2020
 !
 module varss
     integer :: nf    ! number of files antropogenic
@@ -217,11 +218,10 @@ subroutine lee
         else    
             read(11,*)j,current_date
         end if
-        is= ii
-        if(ii.eq.icn) is=jcn  ! suma todo el Carbono Negro
-        if(ii.eq.imt) is=jmt   ! suma todo el Metano
+      if(ii.ge.ipm-1) then; is=ipm ;else ;is=ii;end if
+      if(ii.eq.imt) is=jmt   ! suma todo el Metano
         write(6,'(i4,x,A,A,I3,I3)') ii,fnameA(ii),current_date,is
-		do
+      do
 		 if(ii.eq.ipm) then !for PM2.5
 		 read(11,*,END=100) idcf,rdum,(edum(ih),ih=1,nh)
 		 else
@@ -233,7 +233,7 @@ subroutine lee
 			k=k+1
 			if(idcg(k).eq.idcf) then
 			  do ih=1,nh
-				eft(i,j,is,ih,1)=eft(i,j,is,ih,1)+edum(ih)/WTM(is)*scala(ii) ! Emission from kg to gmol
+            eft(i,j,ii,ih,1)=eft(i,j,ii,ih,1)+edum(ih)/WTM(is)*scala(ii) ! Emission from kg to gmol
               end do
 			  exit busca
 			end if
@@ -263,7 +263,7 @@ subroutine lee
 			if(idcg(k).eq.idcf) then
 			  do ih=1,nh
                 ! Emission from g to gmol by 1/WTM
-                eft(i,j,is,ih,1)=eft(i,j,is,ih,1)+edum(ih)/WTM(is)*scalm(ii)
+                eft(i,j,ii,ih,1)=eft(i,j,ii,ih,1)+edum(ih)/WTM(is)*scalm(ii)
 			  end do
 			  exit busca2
 			end if
@@ -298,15 +298,15 @@ subroutine lee
                 ! Emission from g to gmol by 1/WTM
                 if(ih.gt.9 .and. ih.lt.19) then
                   if(levl.lt.2) then
-                    eft(i,j,is,ih,levl)=eft(i,j,is,ih,levl)+edum(ih)/WTM(is)*scalp(ii)
+                    eft(i,j,ii,ih,levl)=eft(i,j,ii,ih,levl)+edum(ih)/WTM(is)*scalp(ii)
                    else
-                    eft(i,j,is,ih,levl)=eft(i,j,is,ih,levl)+edum(ih)/WTM(is)
+                    eft(i,j,ii,ih,levl)=eft(i,j,ii,ih,levl)+edum(ih)/WTM(is)
                   end if
                  else
                   if(levld.lt.2) then
-                    eft(i,j,is,ih,levld)=eft(i,j,is,ih,levld)+edum(ih)/WTM(is)*scalp(ii)
+                    eft(i,j,ii,ih,levld)=eft(i,j,ii,ih,levld)+edum(ih)/WTM(is)*scalp(ii)
                   else
-                    eft(i,j,is,ih,levld)=eft(i,j,is,ih,levld)+edum(ih)/WTM(is)
+                    eft(i,j,ii,ih,levld)=eft(i,j,ii,ih,levld)+edum(ih)/WTM(is)
                   end if
                  end if
 			  end do
@@ -501,14 +501,7 @@ tiempo: do it=iit,eit
         gases: do ikk=1,ipm-2!for gases
 			ea=0.0
 		if(ikk.eq.1) then
-		      if (it.lt.10) then
-			  write(current_date(13:13),'(A1)')char(it+48)
-			    else
-		        id = int((it)/10)+48 !  Decenas
-                iu = it-10*int((it)/10)+48 ! unidades
-			  write(current_date(12:13),'(A1,A1)')char(id),char(iu)
-			  end if 
-
+         write(current_date(12:13),'(I2.2)')it
   	      Times(1,1)=current_date(1:19)
 			  if (periodo.eq. 1) then
             call check( nf90_put_var(ncid,id_var(radm+1),Times,start=(/1,it+1/)) )
@@ -519,13 +512,23 @@ tiempo: do it=iit,eit
             call check( nf90_put_var(ncid, id_varpop,pob,start=(/1,1,it-11/)) )
 			  endif
             end if   ! for kk == 1
-            do i=1, nx
-                do j=1, ny
-				  do l=1,zlev
-                   ea(i,j,l,1)=eft(i,j,ikk,it+1,l)/(CDIM*CDIM)*8.39483E09
-				  end do
-                end do
+      if(ikk.ne.jmt) then
+        do i=1, nx
+          do j=1, ny
+            do l=1,zlev
+              ea(i,j,l,1)=eft(i,j,ikk,it+1,l)/(CDIM*CDIM)*8.39483E09
             end do
+          end do
+        end do
+      else
+        do i=1, nx
+          do j=1, ny
+            do l=1,zlev
+              ea(i,j,l,1)=(eft(i,j,ikk,it+1,l)+eft(i,j,imt,it+1,l))/(CDIM*CDIM)*8.39483E09
+            end do
+          end do
+        end do
+      end if
             if(periodo.eq.1) then
                 call check( nf90_put_var(ncid, id_var(isp(ikk)),ea,start=(/1,1,1,it+1/)) )
             else
@@ -534,13 +537,23 @@ tiempo: do it=iit,eit
 		 end do gases
         aerosol: do ikk=ipm-1,ns ! from PM10
 			ea=0.0
-            do i=1, nx
-                do j=1, ny
+      if(ikk.ne.jcn)then
+        do i=1, nx
+          do j=1, ny
 			  do l=1,zlev
 				ea(i,j,l,1)=eft(i,j,ikk,it+1,l) /(CDIM*CDIM) !entre 3x3 km
 			  end do
-                end do
+          end do
+        end do
+      else
+        do i=1, nx
+          do j=1, ny
+            do l=1,zlev
+              ea(i,j,l,1)=(eft(i,j,ikk,it+1,l)+eft(i,j,icn,it+1,l))/(CDIM*CDIM)
             end do
+          end do
+        end do
+      end if
 !
             if(periodo.eq.1) then
                 call check( nf90_put_var(ncid, id_var(isp(ikk)),ea*0.8,start=(/1,1,1,it+1/)) )
@@ -553,8 +566,9 @@ tiempo: do it=iit,eit
 		end do tiempo
         call check( nf90_close(ncid) )
 	 end do !periodo
-    deallocate(ea)
-
+    deallocate(ea,eft)
+    deallocate(idcg,pob,xlon,xlat)
+    deallocate(utmxd,utmyd,utmzd)
 end subroutine store
 
 subroutine check(status)

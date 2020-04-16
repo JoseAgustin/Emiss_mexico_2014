@@ -22,6 +22,7 @@
 !   Se incluye NAMELIST                     08/11/2017
 !   Se lee CDIM y titulo de localiza.csv    19/11/2017
 !   Se calcula el dia juliano                3/08/2018
+!   Actualziacion CH4 y BC                  16/04/2020
 !
 module vars
     integer :: nf    ! number of files antropogenic
@@ -195,7 +196,7 @@ subroutine lee
     end if
     if(ii.ge.ipm-1) then; is=ipm ;else ;is=ii;end if
     if(ii.eq.imt) is=jmt   ! suma todo el Metano
-    write(6,'(i4,x,A,A,I3,I3)') ii,fnameA(ii),current_date
+    write(6,'(i4,x,A,A,I3,I3)') ii,fnameA(ii),current_date,is
     do
       if(ii.eq.ipm) then
         read(11,*,END=100) idcf,rdum,(edum(ih),ih=1,nh)
@@ -341,13 +342,13 @@ subroutine store
     call date_and_time(date,time)
      hoy=date(7:8)//'-'//mes(date(5:6))//'-'//date(1:4)//' '//time(1:2)//':'//time(3:4)//':'//time(5:10)
     print *,hoy
-    !write(current_date(4:4),'(A1)')char(6+48)
+    write(current_date(1:4),'(I4)') 2014 !para 2014
     JULDAY=juliano(current_date(1:4),current_date(6:7),current_date(9:10))
-     do periodo=1,2!1
+     do periodo=1,1!1
 	  if(periodo.eq.1) then
         FILE_NAME='wrfchemi.d01.'//trim(mecha)//'.'//current_date(1:19)         !******
 	   iit= 0
-	   eit= 11 !23
+	   eit= 23 !11
 	   iTime=current_date
 	  else if(periodo.eq.2) then
 	   iit=12
@@ -623,6 +624,12 @@ end subroutine check
              end select
           return
           end function
+!    _       _ _
+!   (_)_   _| (_) __ _ _ __   ___
+!   | | | | | | |/ _` | '_ \ / _ \
+!   | | |_| | | | (_| | | | | (_) |
+!  _/ |\__,_|_|_|\__,_|_| |_|\___/
+! |__/
 !
 integer function juliano(year,mes,day)
   character*4,intent(in) :: year
@@ -663,5 +670,6 @@ integer function intc(char)
     end if
     intc=(ichar(char(i:i))-48)*10**(l-i)+intc
   end do
+  return
 end function
 end program guarda_nc
