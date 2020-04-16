@@ -24,6 +24,7 @@
 !   Para anio 2018                          16/01/2018
 !   Se calcula el dia juliano                3/08/2018
 !   CF compliance                           26/06/2019
+!   Actualizacion CH4 y BC                  16/04/2020
 !
 module vars
     integer :: nf    ! number of files antropogenic
@@ -187,7 +188,7 @@ subroutine lee
   CDIM=(utmx(2)-utmx(1))/1000.  ! from meters to km
   print *,CDIM,trim(titulo)
   close(10)
-
+  deallocate(utmx,utmy,utmz,lon,lat,pop)
   do ii=1,nf
   !write(6,*)' >>>> Reading emissions file -',fnameA(i),fnameM(i)
     open(11,file=fnameA(ii),status='OLD',action='READ')
@@ -198,8 +199,7 @@ subroutine lee
     else
       read(11,*)j,current_date
     end if
-    is= ii
-    if(ii.eq.icn) is=jcn  ! suma todo el Carbono Negro
+    if(ii.ge.ipm-1) then; is=ipm ;else ;is=ii;end if
     if(ii.eq.imt) is=jmt   ! suma todo el Metano
     write(6,'(i4,x,A,A,I3,I3)') ii,fnameA(ii),current_date,is
     do
@@ -214,7 +214,7 @@ subroutine lee
         k=k+1
         if(idcg(k).eq.idcf) then
           do ih=1,nh
-            eft(i,j,is,ih,1)=eft(i,j,is,ih,1)+edum(ih)/3.6e12*scala(ii) ! Emission from kg to gmol
+            eft(i,j,ii,ih,1)=eft(i,j,ii,ih,1)+edum(ih)/3.6e12*scala(ii) ! Emission from kg to gmol
           end do
           exit busca
         end if
@@ -244,7 +244,7 @@ subroutine lee
 			if(idcg(k).eq.idcf) then
 			  do ih=1,nh
                 ! Emission from g to gmol by 1/WTM
-                eft(i,j,is,ih,1)=eft(i,j,is,ih,1)+edum(ih)/3.6e12*scalm(ii)
+                eft(i,j,ii,ih,1)=eft(i,j,ii,ih,1)+edum(ih)/3.6e12*scalm(ii)
 			  end do
 			  exit busca2
 			end if
@@ -279,15 +279,15 @@ subroutine lee
                 ! Emission from g to gmol by 1/WTM
                 if(ih.gt.9 .and. ih.lt.19) then
                   if(levl.lt.2) then
-                    eft(i,j,is,ih,1)=eft(i,j,is,ih,1)+edum(ih)/3.6e12*scalp(ii)
+                    eft(i,j,ii,ih,1)=eft(i,j,ii,ih,1)+edum(ih)/3.6e12*scalp(ii)
                    else
-                    eft(i,j,is,ih,1)=eft(i,j,is,ih,1)+edum(ih)/3.6e12
+                    eft(i,j,ii,ih,1)=eft(i,j,ii,ih,1)+edum(ih)/3.6e12
                   end if
                  else
                   if(levld.lt.2) then
-                    eft(i,j,is,ih,1)=eft(i,j,is,ih,1)+edum(ih)/3.6e12*scalp(ii)
+                    eft(i,j,ii,ih,1)=eft(i,j,ii,ih,1)+edum(ih)/3.6e12*scalp(ii)
                   else
-                    eft(i,j,is,ih,1)=eft(i,j,is,ih,1)+edum(ih)/3.6e12
+                    eft(i,j,ii,ih,1)=eft(i,j,ii,ih,1)+edum(ih)/3.6e12
                   end if
                  end if
 	        end do
@@ -347,7 +347,7 @@ subroutine store
     call date_and_time(date,time)
      hoy=date(7:8)//'-'//mes(date(5:6))//'-'//date(1:4)//' '//time(1:2)//':'//time(3:4)//':'//time(5:10)
     print *,hoy
-    write(current_date(4:4),'(A1)')char(8+48) ! para 2018
+    write(current_date(1:4),'(I4)') 2018 !para 2018
     JULDAY=juliano(current_date(1:4),current_date(6:7),current_date(9:10))
      do periodo=1,1!2 1
 	  if(periodo.eq.1) then
@@ -472,15 +472,8 @@ tiempo: do it=iit,eit
         gases: do ikk=1,ipm-2!for gases
 			ea=0.0
 		if(ikk.eq.1) then
-		      if (it.lt.10) then
-			  write(current_date(13:13),'(A1)')char(it+48)
-			    else
-		        id = int((it)/10)+48 !  Decenas
-                iu = it-10*int((it)/10)+48 ! unidades
-			  write(current_date(12:13),'(A1,A1)')char(id),char(iu)
-			  end if 
-
-  	      Times(1,1)=current_date(1:19)
+        write(current_date(12:13),'(I2.2)')it
+        Times(1,1)=current_date(1:19)
 			  if (periodo.eq. 1) then
               call check( nf90_put_var(ncid,id_var(radm+1),Times,start=(/1,it+1/)) )
               call check( nf90_put_var(ncid, id_varlong,xlon,start=(/1,1,it+1/)) )
@@ -493,13 +486,23 @@ tiempo: do it=iit,eit
               call check( nf90_put_var(ncid, id_varpop,pob,start=(/1,1,it-11/)) )
 			  endif
             end if   ! for kk == 1
+        if(ikk.ne.jmt) then
           do i=1, nx
             do j=1, ny
               do l=1,1!zlev
-                 ea(i,j,l,1)=eft(i,j,ikk,it+1,l) /(CDIM*CDIM)
+                 ea(i,j,l,1)=eft(i,j,ikk,it+1,l)/(CDIM*CDIM)
               end do
             end do
           end do
+        else
+          do i=1, nx
+            do j=1, ny
+              do l=1,zlev
+                ea(i,j,l,1)=(eft(i,j,ikk,it+1,l)+eft(i,j,imt,it+1,l))/(CDIM*CDIM)
+              end do
+            end do
+          end do
+        end if
             if(periodo.eq.1) then
                 call check( nf90_put_var(ncid, id_var(isp(ikk)),ea,start=(/1,1,1,it+1/)) )
             else
@@ -508,6 +511,7 @@ tiempo: do it=iit,eit
 		 end do gases
         aerosol: do ikk=ipm-1,ns ! from PM10
 			ea=0.0
+      if(ikk.ne.jcn)then
         do i=1, nx
           do j=1, ny
             do l=1,1!zlev
@@ -515,6 +519,15 @@ tiempo: do it=iit,eit
             end do
           end do
         end do
+      else
+        do i=1, nx
+          do j=1, ny
+            do l=1,zlev
+              ea(i,j,l,1)=(eft(i,j,ikk,it+1,l)+eft(i,j,icn,it+1,l))/(CDIM*CDIM)
+            end do
+          end do
+        end do
+      end if
 !
         if(periodo.eq.1) then
           call check( nf90_put_var(ncid, id_var(isp(ikk)),ea*0.8,start=(/1,1,1,it+1/)) )
@@ -527,8 +540,9 @@ tiempo: do it=iit,eit
 		end do tiempo
         call check( nf90_close(ncid) )
 	 end do !periodo
-    deallocate(ea)
-
+    deallocate(ea,eft)
+    deallocate(idcg,pob,xlon,xlat)
+    deallocate(utmxd,utmyd,utmzd)
 end subroutine store
 
 subroutine check(status)
@@ -595,35 +609,27 @@ end subroutine check
          character(len=3)function mes(num)
           character*2 num
           select case (num)
-            case('01')
-              mes='Jan'
-             case('02')
-             mes='Feb'
-             case('03')
-             mes='Mar'
-             case('04')
-             mes='Apr'
-             case('05')
-             mes='May'
-             case('06')
-             mes='Jun'
-             case('07')
-             mes='Jul'
-             case('08')
-             mes='Aug'
-             case('09')
-             mes='Sep'
-             case('10')
-             mes='Oct'
-             case('11')
-             mes='Nov'
-             case('12')
-             mes='Dec'
+          case('01'); mes='Jan'
+          case('02'); mes='Feb'
+          case('03'); mes='Mar'
+          case('04'); mes='Apr'
+          case('05'); mes='May'
+          case('06'); mes='Jun'
+          case('07'); mes='Jul'
+          case('08'); mes='Aug'
+          case('09'); mes='Sep'
+          case('10'); mes='Oct'
+          case('11'); mes='Nov'
+          case('12'); mes='Dec'
              end select
           return
-
           end function
-!
+!    _       _ _
+!   (_)_   _| (_) __ _ _ __   ___
+!   | | | | | | |/ _` | '_ \ / _ \
+!   | | |_| | | | (_| | | | | (_) |
+!  _/ |\__,_|_|_|\__,_|_| |_|\___/
+! |__/
 integer function juliano(year,mes,day)
   character*4,intent(in) :: year
   character*2,intent(in) :: mes
