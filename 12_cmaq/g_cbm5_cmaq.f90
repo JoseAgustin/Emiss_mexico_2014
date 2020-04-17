@@ -51,7 +51,7 @@ module varsc
     real,allocatable :: utmx(:),utmy(:)
     real,allocatable :: xlon(:,:),xlat(:,:),pob(:,:)
     real,allocatable :: utmxd(:,:),utmyd(:,:)
-    real :: CDIM      ! celdimension in km
+    real :: CDIM, SUPF1    ! celd dimension CDIM km  SUPF1 km^-2
 
     character(len=3) :: cday
     character(len=11),dimension(radm):: ename=(/'CO   ','NH3  ','NO   ', &
@@ -68,7 +68,7 @@ module varsc
     'Organic ','Elemental Carbon'/)
     character (len=19) :: current_date,current_datem,mecha
     character (len=40)  ::titulo
-    common /domain/ ncel,nl,nx,ny,zlev,CDIM
+    common /domain/ ncel,nl,nx,ny,zlev,CDIM,SUPF1
     common /date/ current_date,cday,mecha,cname,titulo
 end module varsc
 
@@ -87,7 +87,7 @@ subroutine lee
     integer :: ii,i,j,k,levl,levld,ih
     integer :: is     ! indice de compuesto
     integer :: iunit=14
-    real ::rdum
+    real ::rdum,constant
     real,dimension(nh)::edum
     real,dimension(ns)::wtm
     real,dimension(nf)::scala,scalm,scalp
@@ -181,6 +181,7 @@ subroutine lee
     end do
     CDIM=(utmx(2)-utmx(1))/1000.  ! from meters to km
     print *,CDIM,trim(titulo)
+    SUPF1=1/(CDIM*CDIM)  ! Area de celda inversa
 	close(10)
   deallocate(utmx,utmy,utmz,lon,lat,pop)
 	do ii=1,nf
@@ -203,12 +204,13 @@ subroutine lee
 		 read(11,*,END=100) idcf,(edum(ih),ih=1,nh)
 		 end if
 		 k=0
+       constant=scala(ii)/WTM(is)
 		 busca: do j=1,ny
 		  do i=1,nx
 			k=k+1
 			if(idcg(k).eq.idcf) then
 			  do ih=1,nh
-				eft(i,j,ii,ih,1)=eft(i,j,ii,ih,1)+edum(ih)/WTM(is)*scala(ii) ! Emission from kg to gmol
+				eft(i,j,ii,ih,1)=eft(i,j,ii,ih,1)+edum(ih)*constant ! Emission from kg to gmol
               end do
 			  exit busca
 			end if
@@ -232,13 +234,14 @@ subroutine lee
 		 read(11,*,END=200) idcf,(edum(ih),ih=1,nh)
 		 end if
 		 k=0
+       constant=scalm(ii)/WTM(is)
 		 busca2: do j=1,ny
 		  do i=1,nx
 			k=k+1
 			if(idcg(k).eq.idcf) then
 			  do ih=1,nh
                 ! Emission from g to gmol by 1/WTM
-                eft(i,j,ii,ih,1)=eft(i,j,ii,ih,1)+edum(ih)/WTM(is)*scalm(ii)
+                eft(i,j,ii,ih,1)=eft(i,j,ii,ih,1)+edum(ih)*constant
 			  end do
 			  exit busca2
 			end if
@@ -265,6 +268,8 @@ subroutine lee
 		 read(11,*,END=300) idcf,levl,(edum(ih),ih=1,nh),levld
 		 end if
 		 k=0
+      constant=scalp(ii)/WTM(is)
+      rdum=1/WTM(is)
 		 busca3: do j=1,ny
 		  do i=1,nx
 			k=k+1
@@ -273,15 +278,15 @@ subroutine lee
                 ! Emission from g to gmol by 1/WTM
                 if(ih.gt.9 .and. ih.lt.19) then
                   if(levl.lt.2) then
-                    eft(i,j,ii,ih,levl)=eft(i,j,ii,ih,levl)+edum(ih)/WTM(is)*scalp(ii)
+                    eft(i,j,ii,ih,levl)=eft(i,j,ii,ih,levl)+edum(ih)*constant
                   else
-                    eft(i,j,ii,ih,levl)=eft(i,j,ii,ih,levl)+edum(ih)/WTM(is)
+                    eft(i,j,ii,ih,levl)=eft(i,j,ii,ih,levl)+edum(ih)*rdum
                   end if
                 else
                   if(levld.lt.2) then
-                    eft(i,j,ii,ih,levld)=eft(i,j,ii,ih,levld)+edum(ih)/WTM(is)*scalp(ii)
+                    eft(i,j,ii,ih,levld)=eft(i,j,ii,ih,levld)+edum(ih)*constant
                   else
-                    eft(i,j,ii,ih,levld)=eft(i,j,ii,ih,levld)+edum(ih)/WTM(is)
+                    eft(i,j,ii,ih,levld)=eft(i,j,ii,ih,levld)+edum(ih)*rdum
                   end if
                 end if
 			  end do
@@ -489,7 +494,7 @@ tiempo: do it=iit,eit
           do i=1, nx
             do j=1, ny
               do l=1,zlev
-                ea(i,j,l,1)=(eft(i,j,ikk,it+1,l)+eft(i,j,icn,it+1,l))/(CDIM*CDIM)
+                ea(i,j,l,1)=(eft(i,j,ikk,it+1,l)+eft(i,j,icn,it+1,l))!/(CDIM*CDIM)
               end do
             end do
           end do
