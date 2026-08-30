@@ -1,6 +1,11 @@
 # Emiss_mexico_2014
 Model system for convert annual emissions to WRF-chem ready emissions.
 
+[![bash](https://img.shields.io/badge/bash-%E2%89%A54.0-blue?logo=gnu-bash)](#requisitos-del-sistema)
+[![Language: Fortran](https://img.shields.io/badge/Language-Fortran%2090-orange.svg)]()
+[![Institution](https://img.shields.io/badge/Institution-CCA%20UNAM-red.svg)](https://www.atmosfera.unam.mx/)
+[![WRF-Chem](https://img.shields.io/badge/Model-WRF--Chem-lightblue.svg)](https://ruc.noaa.gov/wrf/wrf-chem/)
+
 ## Descripción
 
 Inventario de emisiones para modelación de calidad del aire con **WRF-Chem** para la región **Nacional** (año base 2014).
