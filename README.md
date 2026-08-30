@@ -1,29 +1,27 @@
 # Emiss_mexico_2014
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Language: Fortran](https://img.shields.io/badge/language-Fortran-blue.svg)](https://fortran-lang.org/)
-
-Sistema de modelación para convertir emisiones anuales del **Inventario Nacional de Emisiones de México** a formato listo para **WRF-Chem**.
+Model system for convert annual emissions to WRF-chem ready emissions.
 
 ## Descripción
 
-Este repositorio contiene un sistema de programas en Fortran para procesar y convertir 
-las emisiones anuales del inventario nacional de México al formato de entrada requerido 
-por el modelo de calidad del aire WRF-Chem.
-
-Incluye emisiones de:
-- **Fuentes móviles** (vehículos de carretera y fuera de carretera)
-- **Fuentes de área** (doméstico, comercial, servicios)
-- **Fuentes puntuales** (industria)
-- **Fuentes biogénicas**
-
-Los mecanismos químicos soportados incluyen RADM2 y MOZART.
+Inventario de emisiones para modelación de calidad del aire con **WRF-Chem** para la región **Nacional** (año base 2014).
+Incluye emisiones de contaminantes criterio (CO, NOₓ, SO₂, PM₂.₅, PM₁₀, COV) organizadas en sectores:
+fuentes móviles, fuentes de área y fuentes de punto.
 
 ## Estructura del repositorio
 
 ```
 Emiss_mexico_2014/
-├── 01_datos/       # Datos del inventario nacional de emisiones
-├── doc/            # Documentación técnica detallada
+├── 01_datos/        # Información para la distribución espacial en la malla correspondiente
+├── 02_aemis/        # Distribución espacial de las emisiones de área
+├── 03_movilspatial/ # Agrupa la malla de las emisiones por vialidades y carreteras
+├── 04_temis/        # Distribución temporal de las emisiones de área (anual → horaria)
+├── 05_semisM/       # Distribución espacial de emisiones de fuentes móviles
+├── 06_temisM/       # Distribución temporal de las emisiones de fuentes móviles (anual → horaria)
+├── 07_puntual/      # Distribución temporal de las emisiones de fuentes fijas (anual → horaria)
+├── 08_spec/         # Especiación de COV según el mecanismo químico a usar
+├── 09_pm25spec/     # Especiación de PM2.5 en especies inorgánicas y orgánicas
+├── 10_storge/       # Lee salidas anteriores y genera archivo NetCDF para WRF-Chem
+├── 12_cmaq/         # Generación del inventario para el modelo CMAQ (opcional)
 ├── README.md
 └── .gitignore
 ```
@@ -32,22 +30,31 @@ Emiss_mexico_2014/
 
 - Fortran 90/95 o superior
 - Bibliotecas NetCDF (libnetcdf, libnetcdff)
-- WRF-Chem v3.x o superior
+- WRF-Chem (para usar las emisiones generadas)
+- Python 3.x (para scripts de pre/post-procesamiento, opcional)
 
 ## Uso
 
-1. Preparar los archivos de emisiones en `01_datos/`
-2. Revisar la documentación en `doc/`
-3. Compilar los programas y ejecutar en orden
-4. Las salidas son archivos NetCDF para WRF-Chem
+1. Preparar los datos de entrada en `01_datos/`
+2. Editar el mes y día en el archivo **`emis_2014.sh`**
+3. Ejecutar los scripts en orden secuencial (directorios 02 al 09)
+4. La salida final (archivo NetCDF para WRF-Chem) se guarda en **`10_storge/`**
+5. Para generar el inventario para CMAQ, usar el directorio `12_cmaq/`
+
+## Referencia
+
+Si utiliza este código en su investigación, por favor cite:
+
+> García-Reynoso, J.A. et al. Inventario de Emisiones **Nacional** (año base 2014) para modelación de calidad del aire.
+> Centro de Ciencias de la Atmósfera, UNAM. https://github.com/JoseAgustin/Emiss_mexico_2014
 
 ## Autor
 
 **José Agustín García Reynoso**  
 Centro de Ciencias de la Atmósfera, UNAM  
 📧 agustin@atmosfera.unam.mx  
-🔗 https://www.atmosfera.unam.mx/ciencias-ambientales/fisicoquimica-atmosferica/jose-agustin-garcia-reynoso/
+🔗 https://github.com/JoseAgustin
 
 ## Licencia
 
-[MIT License](LICENSE)
+Ver archivo [LICENSE](LICENSE) para detalles.
