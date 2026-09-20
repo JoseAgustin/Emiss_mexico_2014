@@ -39,4 +39,32 @@ run 03_movilspatial agrega
 # 4. Distribucion espacial de moviles (requiere la agregacion)
 run 05_semisM MSpatial
 
+# 5. Distribucion temporal de moviles
+run 06_temisM Mtemporal
+
+# 6. Distribucion temporal de emisiones fuentes fijas
+run 07_puntual Puntual
+
+# 7. Distribucion especies químicas de VOC en paralelo
+(  run 08_spec spa  ) &
+pid_area=$!
+(  run 08_spec spm  ) &
+pid_movil=$!
+(  run 08_spec spp  ) &
+pid_fija=$!
+
+# 8. Distribucion especies químicas de PM2.5 en paralelo
+(  run 09_pm25spec spm25a  ) &
+pid_parea=$!
+(  run 09_pm25spec spm25m  ) &
+pid_pmovil=$!
+(  run 09_pm25spec spm25p  ) &
+pid_pfija=$!
+
+wait $pid_area $pid_movil $pid_fija $pid_parea $pid_pmovil $pid_pfija
+
+# 9. Combina y genera archvio NETCDF para radm
+
+run 10_storage radm2
+
 echo "Emisiones: proceso terminado. Bitacora en $LOG"

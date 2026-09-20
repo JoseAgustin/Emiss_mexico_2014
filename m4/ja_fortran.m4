@@ -60,6 +60,7 @@ AC_DEFUN([JA_NETCDF_FORTRAN],[
     [], [with_netcdf="$NETCDF"])
   AC_ARG_VAR([NETCDF], [directorio raiz de la instalacion de NetCDF])
   AC_ARG_VAR([NF_CONFIG], [ruta del programa nf-config])
+  AC_ARG_VAR([NC_CONFIG], [ruta del programa nc-config])
 
   NETCDF_FCFLAGS=""
   NETCDF_LIBS=""
@@ -72,7 +73,16 @@ AC_DEFUN([JA_NETCDF_FORTRAN],[
 
     AS_IF([test "x$NF_CONFIG" != xno && test -n "$NF_CONFIG"],
       [NETCDF_FCFLAGS=`$NF_CONFIG --fflags 2>/dev/null`
-       NETCDF_LIBS=`$NF_CONFIG --flibs 2>/dev/null`],
+       NETCDF_LIBS=`$NF_CONFIG --flibs 2>/dev/null`
+       dnl nf-config incluye -lnetcdf pero NO el -L de la biblioteca C
+       dnl de NetCDF (Cellar separado en Homebrew). Se complementa con nc-config.
+       AS_IF([test -z "$NC_CONFIG"],
+         [AC_PATH_PROG([NC_CONFIG], [nc-config], [no])])
+       AS_IF([test "x$NC_CONFIG" != xno && test -n "$NC_CONFIG"],
+         [ja_nc_libdir=`$NC_CONFIG --prefix 2>/dev/null`/lib
+          AS_CASE([$NETCDF_LIBS],
+            [*${ja_nc_libdir}*], [],
+            [NETCDF_LIBS="$NETCDF_LIBS -L${ja_nc_libdir}"])])],
       [AS_IF([test -n "$with_netcdf"],
          [NETCDF_FCFLAGS="-I$with_netcdf/include"
           NETCDF_LIBS="-L$with_netcdf/lib -lnetcdff"],
