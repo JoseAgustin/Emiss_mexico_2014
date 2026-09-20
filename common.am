@@ -1,0 +1,9 @@
+# Reglas comunes a todos los subdirectorios (incluido por cada Makefile.am)
+#
+#   FC_MODOUT  : destino de los .mod         (-J. / -module .)
+#   FC_PPFLAGS : preprocesador en .f90       (-cpp / -fpp / -Mpreprocess)
+#   FC_DEFS    : -DPGI cuando el compilador no admite format(<n>...)
+#
+FC_COMMON  = $(FC_MODOUT) $(FC_PPFLAGS) $(FC_DEFS)
+AM_FCFLAGS = $(OPT_FCFLAGS) $(FC_COMMON)
+CLEANFILES = *.mod *.MOD

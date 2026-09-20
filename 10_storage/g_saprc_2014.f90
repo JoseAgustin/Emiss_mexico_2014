@@ -52,22 +52,30 @@ module varss
   parameter(nf=47,ns=45,radm=ns+5,nh=24)
 	
   character(len=3) :: cday
-  character(len=11),dimension(radm):: ename=(/'E_CO','E_NO','E_NO2','E_NH3','E_SO2','E_CH4',&
-  'E_ACET','E_ALK3','E_ALK4','E_ALK5','E_ARO1',    'E_ARO2','E_BACL','E_BALD','E_C2H6','E_C3H8',&
-  'E_CCHO','E_CCO_OH','E_CRES','E_ETHENE','E_GLY', 'E_HCHO','E_HCOOH','E_ISOPRENE',&
-  'E_ISOPROD','E_MEK','E_MEOH','E_METHACRO','E_MGLY', 'E_MVK','E_OLE1','E_OLE2','E_PHEN','E_PROD2',&
-  'E_RCHO','E_RCO_OH','E_TERP','E_CO2','E_PM_10','E_PM25',&
-  'E_SO4I ','E_NO3I ','E_PM25I','E_ORGI ','E_ECI  ',&
-  'E_SO4J ','E_NO3J ','E_PM25J','E_ORGJ ','E_ECJ  '/)
-  character(len=16),dimension(radm):: cname=(/'Carbon Monoxide ','Nitrogen Oxide','Nitrogen Dioxide',&
-  'Ammonia','Sulfur Dioxide','Methane','Acetone','Alkanes 3','Alkanes 4','Alkanes 5',&
-  'Aromatics 1','Aromatics 2','Biacetyl','Aromatic aldehyd','Alkanes 1','Alkanes 2',&
-  'Acetaldehyde','Acetic Acid','Cresol','Ethene','Glyoxal','Formaldehyde','Formic Acid',&
-  'Isoprene','Lumped isoprene ','Ketones and othe','Methanol','Methacrolein','Methyl Glyoxal',&
-  'Methyl Vinyl Ket','Alkenes 1','Alkenes 2','Phenol','Ketones + other',&
-  'Lumped C3+ Aldeh','Higher Carboxyl','Terpenes ','Carbon Dioxide',&
-  'PM_10','PM_25 ','Sulfates ','Nitrates ','OTHER','Organic C','Elemental Carbon  ',&
-  'SulfatesJ','NitratesJ','OTHER','Organic C','Elemental Carbon'/)
+  character(len=11),dimension(radm):: ename=(/&
+  'E_CO       ','E_NO       ','E_NO2      ','E_NH3      ','E_SO2      ',&
+  'E_CH4      ','E_ACET     ','E_ALK3     ','E_ALK4     ','E_ALK5     ','E_ARO1     ',&
+  'E_ARO2     ','E_BACL     ','E_BALD     ','E_C2H6     ','E_C3H8     ','E_CCHO     ',&
+  'E_CCO_OH   ','E_CRES     ','E_ETHENE   ','E_GLY      ','E_HCHO     ','E_HCOOH    ',&
+  'E_ISOPRENE ','E_ISOPROD  ','E_MEK      ','E_MEOH     ','E_METHACRO ','E_MGLY     ',&
+  'E_MVK      ','E_OLE1     ','E_OLE2     ','E_PHEN     ','E_PROD2    ','E_RCHO     ',&
+  'E_RCO_OH   ','E_TERP     ','E_CO2      ','E_PM_10    ','E_PM25     ','E_SO4I     ',&
+  'E_NO3I     ','E_PM25I    ','E_ORGI     ','E_ECI      ','E_SO4J     ','E_NO3J     ',&
+  'E_PM25J    ','E_ORGJ     ','E_ECJ      '/)
+  character(len=16),dimension(radm):: cname=(/&
+    'Carbon Monoxide ','Nitrogen Oxide  ','Nitrogen Dioxide','Ammonia         ',&
+    'Sulfur Dioxide  ','Methane         ','Acetone         ','Alkanes 3       ',&
+    'Alkanes 4       ','Alkanes 5       ','Aromatics 1     ','Aromatics 2     ',&
+    'Biacetyl        ','Aromatic aldehyd','Alkanes 1       ','Alkanes 2       ',&
+    'Acetaldehyde    ','Acetic Acid     ','Cresol          ','Ethene          ',&
+    'Glyoxal         ','Formaldehyde    ','Formic Acid     ','Isoprene        ',&
+    'Lumped isoprene ','Ketones and othe','Methanol        ','Methacrolein    ',&
+    'Methyl Glyoxal  ','Methyl Vinyl Ket','Alkenes 1       ','Alkenes 2       ',&
+    'Phenol          ','Ketones + other ','Lumped C3+ Aldeh','Higher Carboxyl ',&
+    'Terpenes        ','Carbon Dioxide  ','PM_10           ','PM 2.5 um mode  ',&
+    'Sulfates Particl','Nitrates Particl','OTHER Particles ','Organic C partic',&
+    'Elemental Carbon','Sulfates J mode ','Nitrates J mode ','OTHER           ',&
+    'Organic Carbon  ','Elemental Carbon'/)
   character (len=19) :: current_date,current_datem,mecha
   character (len=40)  ::titulo
     common /domain/ ncel,nl,nx,ny,zlev

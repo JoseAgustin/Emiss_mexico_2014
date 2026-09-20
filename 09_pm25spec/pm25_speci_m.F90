@@ -131,7 +131,7 @@ subroutine lee
 #ifndef PGI
 		print '(2i,<nclass>F)',prof2(i),i,(fclass(i,l),l=1,nclass)
 #else
-                print '(2i,6F)',prof2(i),i,(fclass(i,l),l=1,nclass)
+                print '(2i10,6F10.4)',prof2(i),i,(fclass(i,l),l=1,nclass)
 #endif
 	end do
 	close(16)

@@ -1,0 +1,42 @@
+#!/bin/bash
+#
+#  Generado por configure a partir de ejecuta.sh.in  -- NO editar a mano
+#
+#  Proposito: ejecutar la cadena de conversion del inventario de emisiones
+#             con los programas construidos por make.
+#
+#  Basado en el script Compila original (J. A. Garcia Reynoso, 26/07/2017)
+#
+set -euo pipefail
+
+EXEEXT="@EXEEXT@"
+BASE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LOG="$BASE/ejecuta.log"
+
+: > "$LOG"          # el log se trunca una sola vez, al inicio
+
+run() {             # run <directorio> <programa>
+    local dir="$1" prog="$2"
+    echo "=== $(date '+%F %T')  $dir/$prog ===" >> "$LOG"
+    ( cd "$BASE/$dir" && "./${prog}${EXEEXT}" >> "$LOG" 2>&1 )
+}
+
+echo "Emisiones: inicio de la cadena de proceso"
+
+# 1. Emisiones de area, distribucion espacial
+run 02_aemis ASpatial
+
+# 2. Moviles: carreteras y vialidades pueden correr en paralelo
+(  run 03_movilspatial carr  ) &
+pid_carr=$!
+(  run 03_movilspatial vial  ) &
+pid_vial=$!
+wait $pid_carr $pid_vial
+
+# 3. Agregacion de moviles (requiere carr y vial terminados)
+run 03_movilspatial agrega
+
+# 4. Distribucion espacial de moviles (requiere la agregacion)
+run 05_semisM MSpatial
+
+echo "Emisiones: proceso terminado. Bitacora en $LOG"

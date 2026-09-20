@@ -95,7 +95,7 @@ open(unit=11,file='salida2.csv',action='write')
 #ifndef PGI
      write(11, '(I8,",",I6,2(",",ES))') grid2(i),icve3(i),rc(i),sum(i)
 #else
-     write(11, '(I8,",",I6,2(",",E))') grid2(i),icve3(i),rc(i),sum(i)
+     write(11, '(I8,",",I6,2(",",E14.7))') grid2(i),icve3(i),rc(i),sum(i)
 #endif
     end do
 close (11)

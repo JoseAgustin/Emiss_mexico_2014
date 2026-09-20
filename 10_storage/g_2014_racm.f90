@@ -54,26 +54,31 @@ module varsr
 
   character(len=3) :: cday
   character(len=11),dimension(radm):: ename=(/'E_CO   ','E_NH3  ','E_NO   ', &
-  'E_NO2  ','E_SO2  ','E_CH4  ','E_ETH  ','E_HC3  ','E_HC5  ','E_HC8  ',&
-  'E_ETE  ','E_OLI  ','E_OLT  ','E_DIEN ','E_BEN  ','E_TOL  ','E_XYL  ',&
-  'E_XYP  ','E_XYO  ','E_HCHO ','E_ALD  ','E_ACT  ','E_MEK  ','E_KET  ',&
-  'E_ROH  ','E_HKET ','E_CSL  ','E_PHEN ','E_API  ','E_ISO  ','E_LIM  ',&
-  'E_MVK  ','E_MACR ','E_ONIT ','E_GLY  ','E_MGLY ','E_UALD ','E_ACD  ',&
-  'E_ORA2 ','E_ACE  ','E_BALD ','E_EOH  ','E_ETEG ','E_ORA1  ','E_MOH ',&
-  'E_CO2  ','E_PM_10','E_PM_25 ', &
-  'E_SO4I ','E_NO3I ','E_PM25I','E_ORGI ','E_ECI  ',&
-  'E_SO4J ','E_NO3J ','E_PM25J','E_ORGJ ','E_ECJ  '/)
-  character(len=16),dimension(radm):: cname=(/'Carbon Monoxide ','Ammonia','Nitrogen Oxide', &
-  'NO2  ','SO2  ','Methane','Ethane','Alkanes, alcohol','Alkanes, alcohol','Alkanes, alcohol',&
-  'ethene','Internal alkenes','Terminal alkenes','Butadiene and ot','Benzene','Toluene and less',&
-  'm-Xylene','p-Xylene','o-xylene','Formaldehyde','C3 and higher al','Acetone','Methyl ethyl ket',&
-  'ketones','C3 and higher al','Hydroxy ketone','Cresol and other','phenol','Alpha-pinenes an',&
-  'Isoprene','d-limonene','Methyl vinyl ket','methacrolein','Organic nitrate','Glyoxal',&
-  'Methylglyoxal an','Unsaturated alde','Acetaldehyde','Acetic acid and ','Acetylene',&
-  'Benzaldehyde and','Ethanol','Ethylene glycol','Formic acid','Methanol',&
-  'Carbon Dioxide','PM_10','PM_25 ',&
-  'Sulfates ','Nitrates ','OTHER PM25I','Organic ','Elemental Carbon ',&
-  'SulfatesJ','NitratesJ','OTHER PM25J','OrganicJ','Elemental CarbonJ'/)
+    'E_NO2  ','E_SO2  ','E_CH4  ','E_ETH  ','E_HC3  ','E_HC5  ','E_HC8  ',&
+    'E_ETE  ','E_OLI  ','E_OLT  ','E_DIEN ','E_BEN  ','E_TOL  ','E_XYL  ',&
+    'E_XYP  ','E_XYO  ','E_HCHO ','E_ALD  ','E_ACT  ','E_MEK  ','E_KET  ',&
+    'E_ROH  ','E_HKET ','E_CSL  ','E_PHEN ','E_API  ','E_ISO  ','E_LIM  ',&
+    'E_MVK  ','E_MACR ','E_ONIT ','E_GLY  ','E_MGLY ','E_UALD ','E_ACD  ',&
+    'E_ORA2 ','E_ACE  ','E_BALD ','E_EOH  ','E_ETEG ','E_ORA1 ','E_MOH  ',&
+    'E_CO2  ','E_PM_10','E_PM_25', &
+    'E_SO4I ','E_NO3I ','E_PM25I','E_ORGI ','E_ECI  ',&
+    'E_SO4J ','E_NO3J ','E_PM25J','E_ORGJ ','E_ECJ  '/)
+  character(len=16),dimension(radm):: cname=(/&
+    'Carbon Monoxide ','Ammonia NH3     ','Nitrogen Oxide  ', &
+    'Nitrogen Dioxide','Sulfur Dioxide  ','Methane CH4     ','Ethane          ',&
+    'Alkanes, alcohol','Alkanes, alcohol','Alkanes, alcohol','Ethene          ',&
+    'Internal alkenes','Terminal alkenes','Butadiene and ot','Benzene         ',&
+    'Toluene and less','m-Xylene        ','p-Xylene        ','o-xylene        ',&
+    'Formaldehyde    ','C3 and higher al','Acetone         ','Methyl ethyl ket',&
+    'Ketones         ','C3 and higher al','Hydroxy ketone  ','Cresol and other',&
+    'Phenol          ','Alpha-pinenes an','Isoprene        ','d-limonene      ',&
+    'Methyl vinyl ket','Methacrolein    ','Organic nitrate ','Glyoxal CHOCHO  ',&
+    'Methylglyoxal an','Unsaturated alde','Acetaldehyde    ','Acetic acid and ',&
+    'Acetylene       ','Benzaldehyde and','Ethanol         ','Ethylene glycol ',&
+    'Formic acid     ','Methanol        ','Carbon Dioxide  ','PM 10um mode    ',&
+    'PM 2.5um mode   ','Sulfates Particl','Nitrates Particl','PM2.5 I mode    ',&
+    'Organic Carbon  ','Elemental Carbon','Sulfates J mode ','Nitrates J mode ',&
+    'PM2.5 J mode    ','Organic J Carbon','Elemental CarboJ'/)
   character (len=19) :: current_date,current_datem,mecha
   character (len=40) :: titulo
     common /domain/ ncel,nl,nx,ny,zlev

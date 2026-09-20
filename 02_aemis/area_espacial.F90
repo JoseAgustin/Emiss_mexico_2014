@@ -410,7 +410,7 @@ subroutine guarda
 310 format(I9,",",I6,",",F,",",F,<nnscc>(",",ES12.5))
 #else
 300 format(I3,", g_per_year",60(",",A10))
-310 format(I9,",",I6,",",F,",",F,60(",",ES12.5))
+310 format(I9,",",I6,",",F7.4,",",F7.4,60(",",ES12.5))
 #endif
 end subroutine guarda
 integer function cuenta_linea(archivo)

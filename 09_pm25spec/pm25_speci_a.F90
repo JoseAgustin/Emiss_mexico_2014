@@ -135,7 +135,7 @@ subroutine lee
 #ifndef PGI
     323 format(2i,<nclass>F)
 #else
-    323 format(2i,55F)
+    323 format(2i10,55F10.4)
 #endif
 end subroutine lee
 

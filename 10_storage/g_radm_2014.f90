@@ -53,17 +53,21 @@ module vars
 	
     character(len=3) :: cday
     character(len=11),dimension(radm):: ename=(/'E_CO   ','E_NH3  ','E_NO   ', &
-	'E_NO2  ','E_SO2  ','E_ALD  ','E_CH4  ','E_CSL  ','E_ETH  ','E_GLY  ', &
-	'E_HC3  ','E_HC5  ','E_HC8  ','E_HCHO ','E_ISO  ','E_KET  ','E_MACR ', &
-	'E_MGLY ','E_MVK  ','E_OL2  ','E_OLI  ','E_OLT  ','E_ORA1 ','E_ORA2 ', &
-	'E_TOL  ','E_XYL  ','E_CO2  ','E_PM_10','E_PM25 ','E_SO4I ','E_NO3I ','E_PM25I',&
-	'E_ORGI ','E_ECI  ','E_SO4J ','E_NO3J ','E_PM25J','E_ORGJ ','E_ECJ  '/)
-    character(len=16),dimension(radm):: cname=(/'Carbon Monoxide ','NH3             ','NO              ', &
-	'NO2  ','SO2  ','ALDEHYDES  ','METHANE','CRESOL','Ethane','Glyoxal', &
-	'HC3  ','HC5  ','HC8  ','HCHO ','ISOPRENE','Acetone','Acrolein', &
-	'MGLY ','Methyl Vinil Ketone  ','Alkenes','alkenes   ','Terminal Alkynes','Formic Acid','Acetic Acid ', &
-	'TOLUENE  ','XYLENE  ','Carbon Dioxide','PM_10','PM_25 ','Sulfates ','Nitrates ','PM25I',&
-	'Organic ','Elemental Carbon  ','SulfatesJ','NitratesJ','PM25J','Organic','Elemental Carbon'/)
+    'E_NO2  ','E_SO2  ','E_ALD  ','E_CH4  ','E_CSL  ','E_ETH  ','E_GLY  ', &
+    'E_HC3  ','E_HC5  ','E_HC8  ','E_HCHO ','E_ISO  ','E_KET  ','E_MACR ', &
+    'E_MGLY ','E_MVK  ','E_OL2  ','E_OLI  ','E_OLT  ','E_ORA1 ','E_ORA2 ', &
+    'E_TOL  ','E_XYL  ','E_CO2  ','E_PM_10','E_PM25 ','E_SO4I ','E_NO3I ','E_PM25I',&
+    'E_ORGI ','E_ECI  ','E_SO4J ','E_NO3J ','E_PM25J','E_ORGJ ','E_ECJ  '/)
+    character(len=16),dimension(radm):: cname=(/&
+    'Carbon Monoxide ','NH3             ','NO              ', &
+    'NO2             ','SO2             ','ALDEHYDES       ','METHANE         ','CRESOL          ',&
+    'Ethane          ','Glyoxal         ','HC3             ','HC5             ','HC8             ',&
+    'HCHO            ','ISOPRENE        ','Acetone         ','Acrolein        ','MGLY            ',&
+    'Methyl Vinil Ket','Alkenes         ','alkenes         ','Terminal Alkynes','Formic Acid     ',&
+    'Acetic Acid     ','TOLUENE         ','XYLENE          ','Carbon Dioxide  ','PM 10um         ',&
+    'PM 2.5um        ','Sulfates        ','Nitrates        ','PM 2.5 I        ','Organic         ',&
+    'Elemental Carbon','Sulfates J mode ','Nitrates J mode ','PM 2.5 J mode   ','Organic J mode  ',&
+    'Elemental Carbon'/)
     character (len=19) :: current_date,current_datem,mecha
     character (len=40) :: titulo
     common /domain/ ncel,nl,nx,ny,zlev,CDIM,SUPF1
