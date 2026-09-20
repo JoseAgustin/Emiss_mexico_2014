@@ -152,7 +152,7 @@ extensión de Intel/Cray. En ese caso se compila con `-DPGI` y el código usa la
 ## Uso
 
 1. Preparar los datos de entrada en `01_datos/`
-2. Editar el mes y día en el archivo **`emis_2014.sh`**
+2. Editar las variables `mes` y `dia` dentro de **`ejecuta.sh`** (generado por `configure`)
 3. Compilar con `make -j8` (ver sección [Construcción](#construccion))
 4. Ejecutar la cadena completa:
 
@@ -160,7 +160,49 @@ extensión de Intel/Cray. En ese caso se compila con `-DPGI` y el código usa la
 ./ejecuta.sh      # o bien:  make run
 ```
 
-La ejecución escribe `ejecuta.log` con la salida de todos los programas.
+### Orden de etapas y paralelismo
+
+| Etapa | Directorio(s) | Descripción | Depende de |
+|------:|--------------|-------------|------------|
+| 1 | `02_aemis` | Distribución espacial de área | — |
+| 2a | `04_temis` | Distribución temporal de área *(paralelo)* | — |
+| 2b | `03_movilspatial` | Carreteras + vialidades *(paralelo)* | — |
+| 3 | `03_movilspatial` | Agregación de móviles | 2b |
+| 4 | `05_semisM` | Distribución espacial de móviles | 3 |
+| 5 | `06_temisM` | Distribución temporal de móviles | 4 |
+| 6 | `07_puntual` | Distribución temporal de fuentes fijas | — |
+| 7 | `08_spec`, `09_pm25spec` | Especiación VOC + PM₂.₅ *(paralelo)* | 2a, 5, 6 |
+| 8 | `10_storage` | Generación NetCDF para WRF-Chem | 7 |
+
+### Log de tiempos (`ejecuta.log`)
+
+Al finalizar, `ejecuta.log` incluye un resumen de tiempos por etapa y proceso:
+
+```
+=======================================================
+  RESUMEN DE TIEMPOS  (2026-09-20 11:58:29)
+=======================================================
+  Proceso / Etapa                            Tiempo
+  -----------------------------------------  -------
+  02_aemis/ASpatial                            6s
+  Etapa 1  (area espacial)                     6s
+  Etapa 2a (carr+vial paralelo)                1s
+  03_movilspatial/agrega                       0s
+  Etapa 3  (agrega movil)                      0s
+  05_semisM/MSpatial                           1s
+  Etapa 4  (movil espacial)                    1s
+  06_temisM/Mtemporal                          3s
+  Etapa 5  (movil temporal)                    3s
+  07_puntual/Puntual                          19s
+  Etapa 6  (puntual temporal)                 19s
+  Etapa 7  (especiacion VOC+PM2.5 paralelo)   20s
+  10_storage/radm2                            57s
+  Etapa 8  (NetCDF RADM2)                     57s
+  -----------------------------------------  -------
+  TOTAL (tiempo real)                        1m 47s
+=======================================================
+```
+
 La salida final (archivo NetCDF para WRF-Chem) se guarda en **`10_storage/`**.
 Para generar el inventario para CMAQ, usar el directorio `12_cmaq/`.
 
@@ -174,7 +216,7 @@ make distcheck    # verifica que el tarball compila desde cero
 make -C 08_spec   # compila un solo directorio
 ```
 
-> La compilación en paralelo la maneja `make -jN`; no se usan `&` ni `wait` manuales.
+> La compilación en paralelo la maneja `make -jN`; los `&` y `wait` son internos de `ejecuta.sh`.
 
 ---
 

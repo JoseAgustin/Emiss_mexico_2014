@@ -15,56 +15,167 @@ LOG="$BASE/ejecuta.log"
 
 : > "$LOG"          # el log se trunca una sola vez, al inicio
 
-run() {             # run <directorio> <programa>
-    local dir="$1" prog="$2"
-    echo "=== $(date '+%F %T')  $dir/$prog ===" >> "$LOG"
-    ( cd "$BASE/$dir" && "./${prog}${EXEEXT}" >> "$LOG" 2>&1 )
+# ------------------------------------------------------------------
+# Utilidades de tiempo
+# ------------------------------------------------------------------
+declare -a _TIMING=()   # acumula "etapa|segundos" para el resumen final
+
+# Formatea segundos como  Xm Ys  o  Xs
+fmt_elapsed() {
+    local s=$1
+    if (( s >= 60 )); then
+        printf '%dm %02ds' $(( s / 60 )) $(( s % 60 ))
+    else
+        printf '%ds' "$s"
+    fi
 }
 
-echo "Emisiones: inicio de la cadena de proceso"
+# Registra la duracion de una etapa en el array y en el log
+record_stage() {               # record_stage <etiqueta> <segundos>
+    local label="$1" elapsed="$2"
+    _TIMING+=("${label}|${elapsed}")
+    printf '    Tiempo etapa: %s\n' "$(fmt_elapsed "$elapsed")" >> "$LOG"
+}
 
-# 1. Emisiones de area, distribucion espacial
+# run <directorio> <programa>
+# Ejecuta el programa, registra inicio/fin en el log e informa duracion.
+run() {
+    local dir="$1" prog="$2"
+    local t0=$SECONDS
+    printf '\n=== %s  %s/%s ===\n' "$(date '+%F %T')" "$dir" "$prog" >> "$LOG"
+    ( cd "$BASE/$dir" && "./${prog}${EXEEXT}" >> "$LOG" 2>&1 )
+    local elapsed=$(( SECONDS - t0 ))
+    printf '    [%s/%s]  %s\n' "$dir" "$prog" "$(fmt_elapsed "$elapsed")" >> "$LOG"
+    _TIMING+=("${dir}/${prog}|${elapsed}")
+}
+
+# ------------------------------------------------------------------
+# Inicio
+# ------------------------------------------------------------------
+T_TOTAL=$SECONDS
+printf '=== Emisiones: inicio  %s ===\n' "$(date '+%F %T')" | tee -a "$LOG"
+
+# ------------------------------------------------------------------
+# Etapa 1: Distribucion espacial de area
+# ------------------------------------------------------------------
+T_STAGE=$SECONDS
+printf '\n--- Etapa 1: Distribucion espacial de area ---\n' >> "$LOG"
 run 02_aemis ASpatial
+record_stage "Etapa 1  (area espacial)" $(( SECONDS - T_STAGE ))
 
-# 2. Moviles: carreteras y vialidades pueden correr en paralelo
-(  run 03_movilspatial carr  ) &
+# ------------------------------------------------------------------
+# Configuracion de fecha para la distribucion temporal
+# ------------------------------------------------------------------
+mes=1
+dia=27
+
+printf '\nSe calcula emisiones para mes=%s dia=%s\n' "$mes" "$dia" >> "$LOG"
+
+cd "$BASE/04_temis"
+[ -e fecha.txt ] && rm fecha.txt
+#  Aqui cambiar el anio a modelar
+ln -sf anio2015.csv anio2014.csv
+cat << End_Of_File > fecha.txt
+$mes       ! month jan =1 to dec=12
+$dia       ! day in the month (from 1 to 28,30 or 31)
+End_Of_File
+cd "$BASE"
+
+# ------------------------------------------------------------------
+# Etapa 2: Distribucion temporal de area  +  moviles (paralelo)
+# ------------------------------------------------------------------
+T_STAGE=$SECONDS
+printf '\n--- Etapa 2: Temporal de area + moviles carreteras/vialidades (paralelo) ---\n' >> "$LOG"
+
+printf '\nArea Temporal distribution\n' >> "$LOG"
+( run 04_temis Atemporal ) &
+pid_atemp=$!
+
+( run 03_movilspatial carr ) &
 pid_carr=$!
-(  run 03_movilspatial vial  ) &
+( run 03_movilspatial vial ) &
 pid_vial=$!
+
 wait $pid_carr $pid_vial
+record_stage "Etapa 2a (carr+vial paralelo)" $(( SECONDS - T_STAGE ))
 
-# 3. Agregacion de moviles (requiere carr y vial terminados)
+# ------------------------------------------------------------------
+# Etapa 3: Agregacion de moviles (requiere carr y vial)
+# ------------------------------------------------------------------
+T_STAGE=$SECONDS
+printf '\n--- Etapa 3: Agregacion de moviles ---\n' >> "$LOG"
 run 03_movilspatial agrega
+record_stage "Etapa 3  (agrega movil)" $(( SECONDS - T_STAGE ))
 
-# 4. Distribucion espacial de moviles (requiere la agregacion)
+# ------------------------------------------------------------------
+# Etapa 4: Distribucion espacial de moviles
+# ------------------------------------------------------------------
+T_STAGE=$SECONDS
+printf '\n--- Etapa 4: Distribucion espacial de moviles ---\n' >> "$LOG"
 run 05_semisM MSpatial
+record_stage "Etapa 4  (movil espacial)" $(( SECONDS - T_STAGE ))
 
-# 5. Distribucion temporal de moviles
+# ------------------------------------------------------------------
+# Etapa 5: Distribucion temporal de moviles
+# ------------------------------------------------------------------
+T_STAGE=$SECONDS
+printf '\n--- Etapa 5: Distribucion temporal de moviles ---\n' >> "$LOG"
 run 06_temisM Mtemporal
+record_stage "Etapa 5  (movil temporal)" $(( SECONDS - T_STAGE ))
 
-# 6. Distribucion temporal de emisiones fuentes fijas
+# ------------------------------------------------------------------
+# Etapa 6: Distribucion temporal de fuentes fijas
+# ------------------------------------------------------------------
+T_STAGE=$SECONDS
+printf '\n--- Etapa 6: Distribucion temporal de fuentes fijas ---\n' >> "$LOG"
 run 07_puntual Puntual
+record_stage "Etapa 6  (puntual temporal)" $(( SECONDS - T_STAGE ))
 
-# 7. Distribucion especies químicas de VOC en paralelo
-(  run 08_spec spa  ) &
-pid_area=$!
-(  run 08_spec spm  ) &
-pid_movil=$!
-(  run 08_spec spp  ) &
-pid_fija=$!
+# ------------------------------------------------------------------
+# Etapa 7: Especiacion VOC + PM2.5 (paralelo, espera temporal de area)
+# ------------------------------------------------------------------
+wait $pid_atemp   # garantiza que Atemporal termino antes de la especiacion
 
-# 8. Distribucion especies químicas de PM2.5 en paralelo
-(  run 09_pm25spec spm25a  ) &
-pid_parea=$!
-(  run 09_pm25spec spm25m  ) &
-pid_pmovil=$!
-(  run 09_pm25spec spm25p  ) &
-pid_pfija=$!
+T_STAGE=$SECONDS
+printf '\n--- Etapa 7: Especiacion VOC y PM2.5 (paralelo) ---\n' >> "$LOG"
 
-wait $pid_area $pid_movil $pid_fija $pid_parea $pid_pmovil $pid_pfija
+( run 08_spec     spa    ) & pid_spa=$!
+( run 08_spec     spm    ) & pid_spm=$!
+( run 08_spec     spp    ) & pid_spp=$!
+( run 09_pm25spec spm25a ) & pid_pma=$!
+( run 09_pm25spec spm25m ) & pid_pmm=$!
+( run 09_pm25spec spm25p ) & pid_pmp=$!
 
-# 9. Combina y genera archvio NETCDF para radm
+wait $pid_spa $pid_spm $pid_spp $pid_pma $pid_pmm $pid_pmp
+record_stage "Etapa 7  (especiacion VOC+PM2.5 paralelo)" $(( SECONDS - T_STAGE ))
 
+# ------------------------------------------------------------------
+# Etapa 8: Generacion NetCDF para WRF-Chem (RADM2)
+# ------------------------------------------------------------------
+T_STAGE=$SECONDS
+printf '\n--- Etapa 8: Generacion NetCDF (RADM2) ---\n' >> "$LOG"
 run 10_storage radm2
+record_stage "Etapa 8  (NetCDF RADM2)" $(( SECONDS - T_STAGE ))
 
-echo "Emisiones: proceso terminado. Bitacora en $LOG"
+# ------------------------------------------------------------------
+# Resumen de tiempos
+# ------------------------------------------------------------------
+T_WALL=$(( SECONDS - T_TOTAL ))
+{
+printf '\n'
+printf '=%.0s' {1..55}; printf '\n'
+printf '  RESUMEN DE TIEMPOS  (%s)\n' "$(date '+%F %T')"
+printf '=%.0s' {1..55}; printf '\n'
+printf '  %-42s %s\n' "Proceso / Etapa" "Tiempo"
+printf -- '  %-42s %s\n' "-----------------------------------------" "-------"
+for entry in "${_TIMING[@]}"; do
+    label="${entry%%|*}"
+    secs="${entry##*|}"
+    printf '  %-42s %s\n' "$label" "$(fmt_elapsed "$secs")"
+done
+printf -- '  %-42s %s\n' "-----------------------------------------" "-------"
+printf '  %-42s %s\n' "TOTAL (tiempo real)" "$(fmt_elapsed "$T_WALL")"
+printf '=%.0s' {1..55}; printf '\n'
+} | tee -a "$LOG"
+
+printf '\nEmisiones: proceso terminado. Bitacora en %s\n' "$LOG"
