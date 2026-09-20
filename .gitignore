@@ -34,17 +34,26 @@ index.csv
 09_pm25spec/*f90*
 10_storage/wrfc*
 12_cmaq/cmaq.d0*
-./10_storage/Makefile
-./02_aemis/Makefile
-./07_puntual/Makefile
-./08_spec/Makefile
-./04_temis/Makefile
-./Makefile
+# Archivos generados por Autotools (no versionar)
+Makefile
 Makefile.in
-./06_temisM/Makefile
-./09_pm25spec/Makefile
-./03_movilspatial/Makefile
-./05_semisM/Makefile
+*/Makefile
+*/Makefile.in
+# Generados por autoconf / automake / configure
+aclocal.m4
+autom4te.cache/
+build-aux/
+config.status
+config.log
+configure
+configure~
+# Generado por configure a partir de ejecuta.sh.in
+ejecuta.sh
+aclocal.m4
+autom4te.cache/
+build-aux/
+config.status
+ejecuta.sh
 Comentarios.docx
 Fuentes_de_Area
 Informe_19072017.docx
