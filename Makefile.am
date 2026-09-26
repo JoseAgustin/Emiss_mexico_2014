@@ -4,7 +4,7 @@ SUBDIRS = 02_aemis 03_movilspatial 04_temis 05_semisM 06_temisM \
           07_puntual 08_spec 09_pm25spec
 
 if HAVE_NETCDF
-SUBDIRS += 10_storage
+SUBDIRS += 10_storage 11_anual
 endif
 
 # Script de ejecucion generado por configure

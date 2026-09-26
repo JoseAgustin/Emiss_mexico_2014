@@ -96,7 +96,8 @@ AC_CONFIG_FILES([Makefile
                  07_puntual/Makefile
                  08_spec/Makefile
                  09_pm25spec/Makefile
-                 10_storage/Makefile])
+                 10_storage/Makefile
+                 11_anual/Makefile])
 AC_CONFIG_FILES([ejecuta.sh], [chmod +x ejecuta.sh])
 AC_OUTPUT
 
